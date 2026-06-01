@@ -1,34 +1,21 @@
 import React from 'react';
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react';
-import { Editor, rootCtx, defaultValueCtx, editorViewOptionsCtx } from '@milkdown/core';
-import { gfm } from '@milkdown/preset-gfm';
-import { nord } from '@milkdown/theme-nord';
+import { Editor, rootCtx, defaultValueCtx } from '@milkdown/core';
+import { commonmark } from '@milkdown/preset-commonmark';
 
 interface MilkdownEditorProps {
   initialContent: string;
 }
 
 const InnerEditor: React.FC<MilkdownEditorProps> = ({ initialContent }) => {
-  const { loading } = useEditor((root) => {
+  useEditor((root) => {
     return Editor.make()
       .config((ctx) => {
         ctx.set(rootCtx, root);
         ctx.set(defaultValueCtx, initialContent);
-        // Make it clean, no border, nice placeholder
-        ctx.update(editorViewOptionsCtx, (prev) => ({
-          ...prev,
-          attributes: {
-            class: 'milkdown-wysiwyg-editor prose prose-invert focus:outline-none',
-          },
-        }));
       })
-      .config(nord)
-      .use(gfm);
+      .use(commonmark);
   }, [initialContent]);
-
-  if (loading) {
-    return <div className="milkdown-loading">Summoning Editor...</div>;
-  }
 
   return <Milkdown />;
 };
@@ -36,7 +23,9 @@ const InnerEditor: React.FC<MilkdownEditorProps> = ({ initialContent }) => {
 export const MilkdownEditorWrapper: React.FC<MilkdownEditorProps> = ({ initialContent }) => {
   return (
     <MilkdownProvider>
-      <InnerEditor initialContent={initialContent} />
+      <div className="milkdown-wysiwyg-container">
+        <InnerEditor initialContent={initialContent} />
+      </div>
     </MilkdownProvider>
   );
 };

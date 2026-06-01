@@ -219,41 +219,42 @@
   margin-bottom: 60px;
 }
 
-/* macOS Desktop Environment */
+/* macOS Desktop Environment Element */
 .mac-desktop.light-desktop {
   position: relative;
   width: 100%;
   max-width: 1060px;
-  height: 580px;
-  background: transparent;
-  border-radius: 0px;
-  box-shadow: none;
-  border: none;
-  margin-bottom: 40px;
-  overflow: visible; /* Allows floating windows to float outside neatly */
+  height: 600px;
+  background-image: url('/macos_wallpaper.png');
+  background-size: cover;
+  background-position: center;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  margin: 40px auto;
 }
 
-/* Top Menubar (under main header in the hero layout) */
+/* Top Menubar inside the Desktop Screen */
 .mac-desktop.light-desktop .desktop-menubar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 28px;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   padding: 0 16px;
   font-size: 13px;
   font-weight: 500;
   color: #1d1d1f;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
-  z-index: 1;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  z-index: 10;
   position: absolute;
-  top: -24px;
+  top: 0;
   left: 0;
   right: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
 .mac-desktop.light-desktop .menubar-left, 
@@ -514,71 +515,6 @@
 .coral-cursor {
   color: var(--accent-color);
   animation: blink 1s step-end infinite;
-}
-
-/* Accent Switcher Pill at the Bottom */
-.accent-switcher-bar {
-  position: absolute;
-  bottom: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #ffffff;
-  padding: 6px 12px;
-  border-radius: 9999px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.accent-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-
-.accent-dots {
-  display: flex;
-  gap: 6px;
-}
-
-.dot-btn {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  padding: 0;
-  outline: none;
-  transition: transform 0.2s, border-color 0.2s;
-}
-
-.dot-btn.active {
-  transform: scale(1.15);
-}
-
-.dot-coral { background: #ff4e2e; }
-.dot-coral.active { border-color: #ffbba9; }
-
-.dot-green { background: #27c93f; }
-.dot-green.active { border-color: #bbf0c2; }
-
-.dot-charcoal { background: #1d1d1f; }
-.dot-charcoal.active { border-color: #b5b5b7; }
-
-/* Dynamic accents settings mapped in React */
-.accent-coral {
-  --accent-color: #ff4e2e;
-  --accent-color-hover: #ff654a;
-}
-.accent-green {
-  --accent-color: #27c93f;
-  --accent-color-hover: #4de263;
-}
-.accent-charcoal {
-  --accent-color: #1d1d1f;
-  --accent-color-hover: #3a3a3d;
 }
 
 /* Keyboard HUD */

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MilkdownEditorWrapper } from './MilkdownEditor';
+import { Search, Eye, GripVertical } from 'lucide-react';
 
 interface NotesHeroMockupProps {
   desktopRef: React.RefObject<HTMLDivElement | null>;
@@ -137,7 +138,7 @@ always on top
         <div className="drag-handle" style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'grab' }}>
           <span className="window-title-text" style={{ fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)' }}>Kaos Notes</span>
         </div>
-        <div className="window-search-icon" style={{ fontSize: '12px', color: 'var(--text-muted)', cursor: 'pointer' }}>🔍</div>
+        <Search size={14} style={{ color: 'var(--text-muted)', cursor: 'pointer', opacity: 0.8 }} />
       </div>
 
       {/* Editor Content Area */}
@@ -176,9 +177,9 @@ always on top
           <span className="btn-small" style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: '4px', fontWeight: 600, fontSize: '9px', color: 'var(--text-secondary)' }}>N</span>
           <span className="btn-text" style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>Toggle Window</span>
         </div>
-        <div className="bottombar-right" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span className="btn-icon" style={{ cursor: 'pointer', opacity: 0.6 }}>👁️</span>
-          <span className="btn-drag" style={{ color: 'var(--text-muted)', letterSpacing: '-1px', fontWeight: 700 }}>:::</span>
+        <div className="bottombar-right" style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)' }}>
+          <Eye size={14} style={{ cursor: 'pointer', opacity: 0.8 }} />
+          <GripVertical size={14} style={{ cursor: 'pointer', opacity: 0.8 }} />
         </div>
       </div>
     </div>
