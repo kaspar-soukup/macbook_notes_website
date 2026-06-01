@@ -63,7 +63,6 @@ const FAQS = [
 
 function App() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [heroEmail, setHeroEmail] = useState('');
   const [footEmail, setFootEmail] = useState('');
   const [heroSubmitted, setHeroSubmitted] = useState(false);
@@ -77,17 +76,8 @@ function App() {
   // Body classes
   useEffect(() => {
     document.body.classList.add('acc-coral', 'dir-a');
-    return () => { document.body.classList.remove('acc-coral', 'dir-a', 'demo-fs'); };
+    return () => { document.body.classList.remove('acc-coral', 'dir-a'); };
   }, []);
-
-  // Fullscreen toggle
-  useEffect(() => {
-    if (isFullscreen) {
-      document.body.classList.add('demo-fs');
-    } else {
-      document.body.classList.remove('demo-fs');
-    }
-  }, [isFullscreen]);
 
   // Reveal on scroll
   useEffect(() => {
@@ -332,11 +322,6 @@ function App() {
     setFaqOpen(prev => prev === idx ? null : idx);
   }
 
-  function toggleFullscreen() {
-    setIsFullscreen(prev => !prev);
-    window.dispatchEvent(new Event('resize'));
-  }
-
   return (
     <>
       {/* HERO LAND */}
@@ -351,10 +336,6 @@ function App() {
               value={heroEmail} onChange={e => setHeroEmail(e.target.value)} />
             <button type="submit" className="btn btn-primary">Join the waitlist</button>
           </form>
-          {heroSubmitted
-            ? <p className="form-note hero-land-note form-done">You're on the list — we'll be in touch. ✦</p>
-            : <p className="form-note hero-land-note">Free during the beta — drag the note below to try it. ✦</p>
-          }
         </div>
       </section>
 
@@ -374,19 +355,6 @@ function App() {
                   <span className="mb">Window</span>
                   <span className="mb">Help</span>
                   <span className="mb-right" style={{ marginRight: 10 }}>🔋&nbsp;&nbsp;🔊&nbsp;&nbsp;<b>Sat 9:41</b></span>
-                  <button className="demo-fs-btn" type="button" title={isFullscreen ? 'Exit fullscreen' : 'Expand to fullscreen'}
-                    onClick={toggleFullscreen}>
-                    {isFullscreen ? (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M8 3v5H3M21 8h-5V3M3 16h5v5M16 21v-5h5"/>
-                      </svg>
-                    ) : (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-                      </svg>
-                    )}
-                    <span>{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
-                  </button>
                 </div>
 
                 {/* Drag surface */}
@@ -431,11 +399,6 @@ function App() {
                     </KaosWin>
                   </div>
 
-                  {/* Always-on-top badge (shows in fullscreen) */}
-                  <div className="always-on-top-badge">
-                    <span className="aot-dot"></span>Note is always on top
-                  </div>
-
                   {/* Dock */}
                   <div className="dock">
                     <span className="dock-app" style={{ '--c': '#16c172' } as React.CSSProperties}></span>
@@ -451,8 +414,6 @@ function App() {
             </div>
           </div>
         </div>
-        {/* Fullscreen backdrop */}
-        <div className="demo-bd" id="demo-bd" onClick={() => setIsFullscreen(false)}></div>
       </section>
 
       {/* FEATURES */}
