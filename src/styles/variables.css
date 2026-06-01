@@ -1,24 +1,25 @@
 /* src/styles/variables.css */
 :root {
-  /* Premium Dark Theme */
-  --bg-app: rgba(22, 22, 26, 0.72);
-  --bg-sidebar: rgba(18, 18, 22, 0.4);
-  --bg-card: rgba(255, 255, 255, 0.04);
-  --bg-active: rgba(255, 255, 255, 0.08);
+  /* Premium Light/Bright Theme matching Kaos Notes */
+  --bg-app: rgba(255, 255, 255, 0.85);
+  --bg-sidebar: rgba(245, 245, 247, 0.5);
+  --bg-card: #ffffff;
+  --bg-active: rgba(0, 0, 0, 0.05);
   
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(255, 255, 255, 0.2);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-focus: rgba(255, 78, 46, 0.3);
   
-  --text-primary: #f5f5f7;
-  --text-secondary: #86868b;
-  --text-muted: #6e6e73;
-  --accent-color: #ff5e57; /* Premium Raycast Red-Orange */
-  --accent-color-hover: #ff7b75;
+  --text-primary: #1d1d1f;
+  --text-secondary: #515154;
+  --text-muted: #86868b;
+  --accent-color: #ff4e2e; /* Vibrant Coral / Red-Orange */
+  --accent-color-hover: #ff654a;
+  --accent-bg-light: #fff5f2;
   
-  /* Glassmorphism & Shadows */
-  --glass-blur: blur(28px) saturate(210%);
-  --shadow-premium: 0 30px 70px rgba(0, 0, 0, 0.6);
-  --shadow-window: 0 20px 40px rgba(0, 0, 0, 0.4);
+  /* Glassmorphism & Soft Shadows */
+  --glass-blur: blur(20px) saturate(190%);
+  --shadow-premium: 0 30px 60px rgba(0, 0, 0, 0.08), 0 10px 20px rgba(0, 0, 0, 0.04);
+  --shadow-window: 0 15px 35px rgba(0, 0, 0, 0.06), 0 4px 10px rgba(0, 0, 0, 0.03), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
   
   /* Fonts */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -29,7 +30,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
-  background-color: #0b0b0d;
+  background-color: #f8fafc;
   color: var(--text-primary);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
