@@ -219,20 +219,92 @@
   margin-bottom: 60px;
 }
 
-/* macOS Desktop Environment Element */
+/* MacBook Device Hardware Frame Wrapper */
+.macbook-device-wrapper {
+  width: 100%;
+  max-width: 1080px;
+  margin: 40px auto;
+  position: relative;
+  perspective: 1200px;
+}
+
+/* Macbook Bezel (anodized aluminum look) */
+.macbook-bezel {
+  background: #08080a;
+  padding: 18px 18px 0 18px;
+  border-radius: 20px 20px 0 0;
+  position: relative;
+  box-shadow: 0 45px 95px rgba(0, 0, 0, 0.16), 0 15px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  z-index: 10;
+}
+
+/* MacBook Camera Notch */
+.macbook-camera-notch {
+  width: 120px;
+  height: 18px;
+  background: #08080a;
+  border-radius: 0 0 10px 10px;
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-lens {
+  width: 5px;
+  height: 5px;
+  background: #0b1a2b;
+  border-radius: 50%;
+  box-shadow: inset 0 0 2px #047857;
+  opacity: 0.8;
+}
+
+/* MacBook Bottom Bezel */
+.macbook-bottom-bezel {
+  height: 28px;
+  background: #08080a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.macbook-logo-text {
+  color: #7d7d7d;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0.4px;
+}
+
+/* MacBook Silver Hinge & Bottom Case Wedge */
+.macbook-hinge-base {
+  height: 14px;
+  background: linear-gradient(to bottom, #d2d5d8 0%, #b2b5b9 40%, #7d8084 100%);
+  border-radius: 0 0 20px 20px;
+  border-top: 1px solid #63676c;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  position: relative;
+  z-index: 5;
+  margin-top: -1px;
+}
+
+/* Central Screen inside the Bezel */
 .mac-desktop.light-desktop {
   position: relative;
   width: 100%;
-  max-width: 1060px;
-  height: 600px;
+  height: 580px;
   background-image: url('/macos_wallpaper.png');
   background-size: cover;
   background-position: center;
-  border-radius: 20px;
+  border-radius: 4px; /* Slight round inside the bezel */
   overflow: hidden;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  margin: 40px auto;
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 /* Top Menubar inside the Desktop Screen */
@@ -242,13 +314,13 @@
   align-items: center;
   height: 28px;
   background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   padding: 0 16px;
   font-size: 13px;
   font-weight: 500;
   color: #1d1d1f;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   z-index: 10;
   position: absolute;
   top: 0;
@@ -515,6 +587,108 @@
 .coral-cursor {
   color: var(--accent-color);
   animation: blink 1s step-end infinite;
+}
+
+/* macOS Elegant Glassmorphic Dock */
+.desktop-dock {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  z-index: 100;
+  transition: padding 0.2s;
+}
+
+.dock-item {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dock-item:hover {
+  transform: translateY(-8px) scale(1.15);
+}
+
+/* Squircle Base */
+.squircle-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+}
+
+/* Finder Spec */
+.finder-bg {
+  background: linear-gradient(135deg, #d3e5ff 0%, #a2c6ff 100%);
+  border-color: rgba(0, 122, 255, 0.1);
+}
+
+.finder-face {
+  font-size: 26px;
+  color: #007aff;
+  line-height: 1;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 500;
+}
+
+/* Safari Spec */
+.safari-bg {
+  background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%);
+  border-color: rgba(33, 150, 243, 0.15);
+}
+
+/* VS Code Spec */
+.vscode-bg {
+  background: #ffffff;
+  border-color: rgba(0, 102, 179, 0.1);
+}
+
+/* Kaos Notes dock icon */
+.kaos-notes-dock-icon {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.04);
+  padding: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Settings Spec */
+.settings-bg {
+  background: linear-gradient(135deg, #f5f5f7 0%, #e5e5ea 100%);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Running App Indicator Dot */
+.active-app {
+  padding-bottom: 5px;
+}
+
+.active-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #1d1d1f;
+  position: absolute;
+  bottom: -4px;
+  opacity: 0.7;
 }
 
 /* Keyboard HUD */
