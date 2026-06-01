@@ -10,6 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@milkdown/core": "^7.21.1",
+    "@milkdown/preset-commonmark": "^7.21.1",
+    "@milkdown/preset-gfm": "^7.21.1",
+    "@milkdown/react": "^7.21.1",
+    "@milkdown/theme-nord": "^7.21.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },

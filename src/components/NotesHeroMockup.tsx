@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { MilkdownEditorWrapper } from './MilkdownEditor';
 
 interface NotesHeroMockupProps {
   desktopRef: React.RefObject<HTMLDivElement | null>;
@@ -129,34 +130,42 @@ always on top
           {alwaysOnTop && <span className="pinned-badge">Always on Top</span>}
         </div>
         <div className="window-meta">
-          <span>Markdown</span>
+          <span>WYSIWYG</span>
         </div>
       </div>
 
       {/* Editor Content Area */}
       <div className="editor-container">
-        <div className="line-numbers">
-          {content.split('\n').map((_, index) => (
-            <div key={index} className="line-no">{index + 1}</div>
-          ))}
-        </div>
-        <div 
-          className="editor-textarea"
-          contentEditable
-          suppressContentEditableWarning
-          onInput={handleContentChange}
-          onFocus={() => setIsTypingSimulated(false)}
-          data-placeholder="Start typing your note here..."
-        >
-          {content}
-        </div>
+        {isTypingSimulated ? (
+          <>
+            <div className="line-numbers">
+              {content.split('\n').map((_, index) => (
+                <div key={index} className="line-no">{index + 1}</div>
+              ))}
+            </div>
+            <div 
+              className="editor-textarea"
+              contentEditable
+              suppressContentEditableWarning
+              onInput={handleContentChange}
+              onFocus={() => setIsTypingSimulated(false)}
+              data-placeholder="Start typing your note here..."
+            >
+              {content}
+            </div>
+          </>
+        ) : (
+          <div className="milkdown-wrapper" onClick={() => setIsTypingSimulated(false)}>
+            <MilkdownEditorWrapper initialContent={content || fullText} />
+          </div>
+        )}
       </div>
 
       {/* Status Bar */}
       <div className="window-statusbar">
         <div className="statusbar-left">
-          <span>{content.length} characters</span>
-          <span>{content.split(/\s+/).filter(Boolean).length} words</span>
+          <span>{content.length || fullText.length} characters</span>
+          <span>{(content || fullText).split(/\s+/).filter(Boolean).length} words</span>
         </div>
         <div className="statusbar-right">
           <span>UTF-8</span>
@@ -166,4 +175,5 @@ always on top
     </div>
   );
 };
+
 
