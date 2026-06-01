@@ -68,8 +68,6 @@ function App() {
   const [footEmail, setFootEmail] = useState('');
   const [heroSubmitted, setHeroSubmitted] = useState(false);
   const [footSubmitted, setFootSubmitted] = useState(false);
-  const [floatNavVisible, setFloatNavVisible] = useState(false);
-
   const heroLandRef = useRef<HTMLElement>(null);
   const ldSurfaceRef = useRef<HTMLDivElement>(null);
   const ldNoteRef = useRef<HTMLDivElement>(null);
@@ -103,18 +101,6 @@ function App() {
     }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
     return () => io.disconnect();
-  }, []);
-
-  // Float nav
-  useEffect(() => {
-    const hero = heroLandRef.current;
-    if (!hero) return;
-    const onScroll = () => {
-      setFloatNavVisible(hero.getBoundingClientRect().bottom <= 0);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // Hero note drag
@@ -353,25 +339,6 @@ function App() {
 
   return (
     <>
-      {/* NAV */}
-      <header className="nav" id="top">
-        <div className="wrap nav-inner">
-          <a className="brand" href="#top">
-            <img className="mark" src="/app_icon.png" alt="" />
-            <span>Kaos&nbsp;Notes</span>
-          </a>
-          <nav className="nav-links">
-            <a href="#features">Features</a>
-            <a href="#how">How it works</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#faq">FAQ</a>
-          </nav>
-          <div className="nav-cta">
-            <a href="#waitlist" className="btn btn-primary">Join the waitlist</a>
-          </div>
-        </div>
-      </header>
-
       {/* HERO LAND */}
       <section className="hero-land" id="hero-land" ref={heroLandRef}>
         <div className="wrap hero-land-wrap">
@@ -769,7 +736,7 @@ function App() {
       </footer>
 
       {/* FLOAT NAV */}
-      <div className={`float-nav${floatNavVisible ? ' fn-visible' : ''}`} aria-hidden={!floatNavVisible}>
+      <div className="float-nav fn-visible">
         <a className="brand fn-brand" href="#top">
           <img className="mark" src="/app_icon.png" alt="" />
           <span>Kaos&nbsp;Notes</span>
