@@ -245,6 +245,7 @@ function App() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [downloadEmail, setDownloadEmail] = useState('');
   const [downloadEmailSubmitted, setDownloadEmailSubmitted] = useState(false);
+  const [navMenuOpen, setNavMenuOpen] = useState(false);
 
   const triggerDownload = () => {
     const link = document.createElement('a');
@@ -376,6 +377,46 @@ function App() {
           </div>
         </div>
         <div className="demo-pad">
+          <div className="hero-mobile-preview reveal">
+            <div className="hmp-backdrop">
+              <div className="hmp-stack">
+                {/* Faux background app to show the note is layered ON TOP */}
+                <div className="hmp-bg-window" aria-hidden="true">
+                  <div className="hmp-bg-bar">
+                    <span className="aw-lights"><i></i><i></i><i></i></span>
+                    <div className="hmp-bg-url">
+                      <Lock size={9} strokeWidth={2.4} color="#86868b" />
+                      <span>kaosnotes.app</span>
+                    </div>
+                  </div>
+                  <div className="hmp-bg-body">
+                    <div className="sp-hero" />
+                    <div className="sp-line w70" />
+                    <div className="sp-line w50" />
+                    <div className="sp-line w82" />
+                    <div className="sp-grid">
+                      <div className="sp-card" />
+                      <div className="sp-card" />
+                      <div className="sp-card" />
+                    </div>
+                    <div className="sp-line w70" />
+                    <div className="sp-line w40" />
+                  </div>
+                </div>
+                <div className="hmp-note">
+                  <KaosWin
+                    title="kaos-notes.md"
+                    heading="Keep your notes on top."
+                    pinned
+                    toolbar={false}
+                  >
+                    <p className="kw-p">Kaos Notes that <b>float above every window</b> on your Mac — right where you left them.<span className="kw-cursor"></span></p>
+                  </KaosWin>
+                </div>
+              </div>
+              <p className="hmp-caption">Floats above every window on your Mac.</p>
+            </div>
+          </div>
           <div className="demo-outer reveal" id="demo-outer">
             <div className="hero-d">
               <div className="livedesk" id="livedesk">
@@ -858,17 +899,25 @@ function App() {
       </footer>
 
       {/* FLOAT NAV */}
-      <div className="float-nav fn-visible">
+      <div className={`float-nav fn-visible${navMenuOpen ? ' fn-menu-open' : ''}`}>
         <a className="brand fn-brand" href="#top">
           <img className="mark" src="/app_icon.png" alt="" />
           <span>Kaos&nbsp;Notes</span>
         </a>
         <nav className="fn-links">
-          <a href="#features">Features</a>
-          <a href="#shortcuts">Shortcuts</a>
-          <a href="#how">How&nbsp;it&nbsp;works</a>
-          <a href="#faq">FAQ</a>
+          <a href="#features" onClick={() => setNavMenuOpen(false)}>Features</a>
+          <a href="#shortcuts" onClick={() => setNavMenuOpen(false)}>Shortcuts</a>
+          <a href="#how" onClick={() => setNavMenuOpen(false)}>How&nbsp;it&nbsp;works</a>
+          <a href="#faq" onClick={() => setNavMenuOpen(false)}>FAQ</a>
         </nav>
+        <button
+          className="fn-menu-toggle"
+          aria-label={navMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={navMenuOpen}
+          onClick={() => setNavMenuOpen(o => !o)}
+        >
+          <span /><span /><span />
+        </button>
         <button onClick={handleDownloadStart} className="btn btn-primary fn-cta">Download</button>
       </div>
 
