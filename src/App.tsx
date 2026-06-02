@@ -101,7 +101,7 @@ type DragOpts = {
 
 function makeDragHandlers(
   dragRef: React.MutableRefObject<DragState>,
-  surfaceRef: React.RefObject<HTMLDivElement>,
+  surfaceRef: React.RefObject<HTMLDivElement | null>,
   opts: DragOpts = {}
 ) {
   const parentSelector = opts.parentSelector ?? '.app-win';
@@ -158,12 +158,28 @@ const FAQS = [
 
 function App() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
-  const [heroEmail, setHeroEmail] = useState('');
-  const [footEmail, setFootEmail] = useState('');
-  const [heroSubmitted, setHeroSubmitted] = useState(false);
-  const [footSubmitted, setFootSubmitted] = useState(false);
   const [openApps, setOpenApps] = useState<Set<string>>(new Set(['safari', 'textedit']));
   const [fullscreenApp, setFullscreenApp] = useState<string | null>(null);
+
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadEmail, setDownloadEmail] = useState('');
+  const [downloadEmailSubmitted, setDownloadEmailSubmitted] = useState(false);
+
+  const triggerDownload = () => {
+    const link = document.createElement('a');
+    link.href = '/downloads/KaosNotes-beta.dmg';
+    link.download = 'KaosNotes-beta.dmg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadStart = () => {
+    triggerDownload();
+    setShowDownloadModal(true);
+    setDownloadEmail('');
+    setDownloadEmailSubmitted(false);
+  };
 
   // Persisted positions (so drag survives fullscreen toggle)
   const [mailPos, setMailPos] = useState<{ left: string | number; top: string | number }>({ left: '3%', top: '12%' });
@@ -257,14 +273,6 @@ function App() {
   }, []);
 
 
-  function handleWaitlist(e: React.FormEvent, email: string, setSubmitted: (v: boolean) => void, setEmail: (v: string) => void) {
-    e.preventDefault();
-    const ok = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
-    if (!ok) return;
-    setSubmitted(true);
-    setEmail('');
-  }
-
   function toggleFaq(idx: number) {
     setFaqOpen(prev => prev === idx ? null : idx);
   }
@@ -277,14 +285,13 @@ function App() {
           <div className="reveal center" style={{ maxWidth: 760, margin: '0 auto 40px' }}>
             <h1 className="section-title hero-demo-h1">Notes wherever you need them.</h1>
             <p className="section-sub hero-demo-sub">Always on top · Keyboard-first · Markdown editor · Hidden from screen recordings</p>
-            <form className="waitlist center-x" id="waitlist-hero" noValidate
-              onSubmit={e => handleWaitlist(e, heroEmail, setHeroSubmitted, setHeroEmail)}
-              style={{ marginTop: 28 }}>
-              <input type="email" placeholder="you@email.com" aria-label="Email address"
-                value={heroEmail} onChange={e => setHeroEmail(e.target.value)} />
-              <button type="submit" className="btn btn-primary">Join the waitlist</button>
-            </form>
-            {heroSubmitted && <p className="form-note form-done" style={{ marginTop: 12 }}>You're on the list — we'll be in touch. ✦</p>}
+            <div style={{ marginTop: 28 }}>
+              <button onClick={handleDownloadStart} className="btn btn-primary" style={{ height: 'auto', padding: '12px 36px', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2, borderRadius: 28 }}>
+                <span style={{ fontWeight: 700, fontSize: 16.5, letterSpacing: '-0.01em' }}>Download for macOS</span>
+                <span style={{ fontWeight: 400, fontSize: 11.5, opacity: 0.85 }}>Free • Beta • Apple Silicon & Intel</span>
+              </button>
+              <p className="form-note" style={{ marginTop: 12 }}>Requires macOS 12 or newer</p>
+            </div>
           </div>
         </div>
         <div className="demo-pad">
@@ -678,14 +685,12 @@ function App() {
         <div className="wrap">
           <div className="center reveal" style={{ maxWidth: 640, margin: '0 auto' }}>
             <h2>Bring a little order to the kaos.</h2>
-            <p className="section-sub" style={{ margin: '0 auto 36px' }}>Join the waitlist for early, free access on Mac.</p>
-            <form className="waitlist center-x on-dark" id="waitlist-foot" noValidate
-              onSubmit={e => handleWaitlist(e, footEmail, setFootSubmitted, setFootEmail)}>
-              <input type="email" placeholder="you@email.com" aria-label="Email address"
-                value={footEmail} onChange={e => setFootEmail(e.target.value)} />
-              <button type="submit" className="btn btn-primary">Join the waitlist</button>
-            </form>
-            {footSubmitted && <p className="form-note form-done" style={{ marginTop: 12 }}>You're on the list — we'll be in touch. ✦</p>}
+            <p className="section-sub" style={{ margin: '0 auto 36px' }}>Download the free beta for macOS today.</p>
+            <button onClick={handleDownloadStart} className="btn btn-primary" style={{ height: 'auto', padding: '12px 36px', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2, borderRadius: 28 }}>
+              <span style={{ fontWeight: 700, fontSize: 16.5, letterSpacing: '-0.01em' }}>Download for macOS</span>
+              <span style={{ fontWeight: 400, fontSize: 11.5, opacity: 0.85 }}>Free • Beta • Apple Silicon & Intel</span>
+            </button>
+            <p className="form-note" style={{ marginTop: 12, color: 'rgba(255,255,255,0.5)' }}>Requires macOS 12 or newer</p>
           </div>
           <div className="footer-cols">
             <div>
@@ -732,8 +737,52 @@ function App() {
           <a href="#how">How&nbsp;it&nbsp;works</a>
           <a href="#faq">FAQ</a>
         </nav>
-        <a href="#waitlist" className="btn btn-primary fn-cta">Join the waitlist</a>
+        <button onClick={handleDownloadStart} className="btn btn-primary fn-cta">Download</button>
       </div>
+
+      {showDownloadModal && (
+        <div className="dl-modal-overlay" onClick={() => setShowDownloadModal(false)}>
+          <div className="dl-modal" onClick={e => e.stopPropagation()}>
+            <button className="dl-modal-close" aria-label="Close modal" onClick={() => setShowDownloadModal(false)}>×</button>
+            
+            <div className="dl-icon-container">
+              <div className="dl-icon-pulse" />
+              <img src="/app_icon.png" alt="Kaos Notes" />
+            </div>
+
+            <h2>Downloading Kaos Notes... 🚀</h2>
+            <p>Your download has started. Enter your email below to receive updates on new features, tips, and keyboard shortcuts.</p>
+
+            {downloadEmailSubmitted ? (
+              <p className="form-note form-done" style={{ fontSize: 16, marginTop: 12 }}>
+                Awesome! We'll keep you posted on new updates. ✦
+              </p>
+            ) : (
+              <form className="waitlist" onSubmit={(e) => {
+                e.preventDefault();
+                const ok = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(downloadEmail.trim());
+                if (ok) {
+                  setDownloadEmailSubmitted(true);
+                }
+              }}>
+                <input
+                  type="email"
+                  placeholder="you@email.com"
+                  aria-label="Email for updates"
+                  value={downloadEmail}
+                  onChange={e => setDownloadEmail(e.target.value)}
+                  required
+                />
+                <button type="submit" className="btn btn-primary">Keep me updated</button>
+              </form>
+            )}
+
+            <button className="dl-modal-skip" onClick={() => setShowDownloadModal(false)}>
+              Skip for now
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

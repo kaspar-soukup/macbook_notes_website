@@ -791,7 +791,7 @@ body.dir-a .card:hover { border-color: color-mix(in oklab, var(--accent) 40%, va
 }
 
 /* Hero (demo-as-hero) typography */
-.hero-demo { padding-top: 80px; }
+.hero-demo { padding-top: 180px; }
 .hero-demo-h1 {
   font-size: clamp(44px, 6vw, 78px);
   font-weight: 800;
@@ -983,6 +983,7 @@ body.demo-fs .always-on-top-badge {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 720px) {
+  .hero-demo { padding-top: 110px; }
   .demo-outer .hero-d .ld-surface { height: 480px !important; }
   .demo-pad { padding: 0 16px; }
   .hero-land { padding: 72px 0 64px; }
@@ -993,5 +994,134 @@ body.demo-fs .always-on-top-badge {
   .demo-outer .hero-d .ld-surface { height: 400px !important; }
 }
 
+/* ============================================================
+   DOWNLOAD MODAL
+   ============================================================ */
+.dl-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.dl-modal {
+  width: min(440px, 90vw);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 24px 60px rgba(0, 0, 0, 0.15);
+  border-radius: 24px;
+  padding: 36px 32px;
+  position: relative;
+  text-align: center;
+  animation: scaleUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.dl-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+  transition: background 0.15s, transform 0.15s;
+}
+.dl-modal-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: scale(1.05);
+}
+
+.dl-icon-container {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid var(--hair);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  margin: 0 auto 24px;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.dl-icon-container img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+.dl-icon-pulse {
+  position: absolute;
+  inset: -4px;
+  border: 2px solid var(--accent);
+  border-radius: 24px;
+  opacity: 0;
+  animation: dlPulse 2s infinite var(--ease);
+}
+
+@keyframes dlPulse {
+  0% { transform: scale(0.95); opacity: 0.5; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+
+.dl-modal h2 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.dl-modal p {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.dl-modal .waitlist {
+  max-width: 100%;
+}
+
+.dl-modal-skip {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: 13.5px;
+  color: var(--muted);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.dl-modal-skip:hover {
+  color: var(--ink);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 /* mark invert for dark footer */
 .mark-invert { filter: invert(1); }
+
