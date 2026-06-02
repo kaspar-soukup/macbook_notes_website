@@ -3,17 +3,23 @@
    ============================================================ */
 
 :root {
-  --ink:      #1d1d1f;
-  --muted:    #6e6e73;
-  --hair:     #d2d2d7;
-  --surface:  #f5f5f7;
+  --orange:     #F24E26;
+  --orange-d:   #c93614;
+  --light-blue: #ACCEE1;
+  --beige:      #EBEBEB;
+  --dark-blue:  #0E263C;
+
+  --ink:      var(--dark-blue);
+  --muted:    #5a6e85;
+  --hair:     #cbd5e1;
+  --surface:  var(--beige);
   --white:    #ffffff;
-  --coral:    #ff5a36;
-  --coral-d:  #d83f1d;
+  --coral:    var(--orange);
+  --coral-d:  var(--orange-d);
   --green:    #16c172;
   --green-d:  #0f9d5b;
   --lime:     #c6f24e;
-  --ink-navy: #14171f;
+  --ink-navy: var(--dark-blue);
   --sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "Segoe UI", sans-serif;
   --ease: cubic-bezier(.22,.61,.36,1);
   --accent:       var(--coral);
@@ -21,8 +27,8 @@
   --btn-text:     #fff;
   --radius-card:  22px;
   --radius-note:  16px;
-  --shadow-card:  0 1px 2px rgba(0,0,0,.04), 0 12px 30px -12px rgba(0,0,0,.10);
-  --shadow-note:  0 10px 24px -8px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.06);
+  --shadow-card:  0 1px 2px rgba(14, 38, 60, .04), 0 12px 30px -12px rgba(14, 38, 60, .10);
+  --shadow-note:  0 10px 24px -8px rgba(14, 38, 60, .18), 0 2px 6px rgba(14, 38, 60, .06);
   --display-weight: 800;
   --display-tracking: -.03em;
   --section-pad: 120px;
@@ -233,7 +239,7 @@ h1,h2,h3 { font-weight: var(--display-weight); letter-spacing: var(--display-tra
 }
 
 /* Accent variants for the demo note */
-.ld-note.acc-blue { --accent: #007aff; --accent-ink: #0061cc; }
+.ld-note.acc-blue { --accent: var(--light-blue); --accent-ink: var(--ink); }
 .ld-note.acc-violet { --accent: #af52de; --accent-ink: #8b3fb0; }
 .ld-note.acc-green { --accent: #34c759; --accent-ink: #2ba345; }
 
@@ -464,9 +470,9 @@ body.dir-a .card:hover { border-color: color-mix(in oklab, var(--accent) 40%, va
   position: relative; overflow: hidden;
   height: 540px;
   background:
-    radial-gradient(120% 90% at 80% 0%, #e9fbf1 0%, transparent 55%),
-    radial-gradient(110% 100% at 0% 100%, #eaf3ff 0%, transparent 50%),
-    linear-gradient(160deg, #f3f5f7, #e7ebef);
+    radial-gradient(120% 90% at 80% 0%, #ffffff 0%, transparent 55%),
+    radial-gradient(110% 100% at 0% 100%, var(--light-blue) 0%, transparent 50%),
+    linear-gradient(160deg, var(--surface), #ffffff);
   touch-action: none;
   user-select: none;
 }
@@ -556,9 +562,9 @@ body.dir-a .card:hover { border-color: color-mix(in oklab, var(--accent) 40%, va
   position: relative;
   border-bottom: 1px solid var(--hair);
   background:
-    radial-gradient(120% 90% at 82% -10%, #e9fbf1 0%, transparent 52%),
-    radial-gradient(110% 100% at -5% 110%, #eaf3ff 0%, transparent 48%),
-    linear-gradient(160deg, #f4f6f8, #e6eaee);
+    radial-gradient(120% 90% at 82% -10%, #ffffff 0%, transparent 52%),
+    radial-gradient(110% 100% at -5% 110%, var(--light-blue) 0%, transparent 48%),
+    linear-gradient(160deg, var(--surface), #ffffff);
 }
 .menubar {
   height: 34px; display:flex; align-items:center; gap:18px;
@@ -841,9 +847,9 @@ body.dir-a .card:hover { border-color: color-mix(in oklab, var(--accent) 40%, va
   position: relative;
   border-bottom: none;
   background:
-    radial-gradient(120% 90% at 82% -10%, #e9fbf1 0%, transparent 52%),
-    radial-gradient(110% 100% at -5% 110%, #eaf3ff 0%, transparent 48%),
-    linear-gradient(160deg, #f4f6f8, #e6eaee);
+    radial-gradient(120% 90% at 82% -10%, #ffffff 0%, transparent 52%),
+    radial-gradient(110% 100% at -5% 110%, var(--light-blue) 0%, transparent 48%),
+    linear-gradient(160deg, var(--surface), #ffffff);
 }
 .demo-outer .hero-d .ld-surface {
   height: 600px !important;

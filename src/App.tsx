@@ -124,25 +124,29 @@ function KaosWin({
   const interactive = Boolean(onClose || onMinimize || onExpand);
   return (
     <div className={`kaos-win${interactive ? ' kw-interactive' : ''}${privacy ? ' kw-privacy' : ''}`}>
-      {interactive && pinned && (
+      {pinned && (
         <div className="kw-pin-badge" title="Always on top">
           <Pin size={12} strokeWidth={2.4} fill="currentColor" />
         </div>
       )}
-      {interactive && privacy && (
+      {privacy && (
         <div className="kw-privacy-badge" title="Hidden from screen recordings">
           <Shield size={11} strokeWidth={2.4} />
           Private
         </div>
       )}
       <div className="kw-bar" {...barHandlers}>
-        <span className="kw-lights">
-          <i onClick={onClose}></i>
-          <i onClick={onMinimize}></i>
-          <i onClick={onExpand}></i>
-        </span>
+        {interactive && (
+          <span className="kw-lights">
+            <i onClick={onClose}></i>
+            <i onClick={onMinimize}></i>
+            <i onClick={onExpand}></i>
+          </span>
+        )}
         <span className="kw-title">{title}</span>
-        <span className="kw-gear" onClick={onSearch}>{SEARCH_SVG}</span>
+        {onSearch && (
+          <span className="kw-gear" onClick={onSearch}>{SEARCH_SVG}</span>
+        )}
       </div>
       {searchOpen && (
         <div className="kw-search">
@@ -157,10 +161,10 @@ function KaosWin({
       </div>
       {toolbar && (
         <div className="kw-toolbar">
-          <span className="kw-tool-gear" onClick={onGear}>{GEAR_SVG}</span>
+          {onGear && <span className="kw-tool-gear" onClick={onGear}>{GEAR_SVG}</span>}
           <span className="kw-keys"><span className="k">⌃</span><span className="k">⇧</span><span className="k">N</span></span>
-          <span className={`kw-act${pinned ? ' active' : ''}`} onClick={onToggle}>Toggle Window</span>
-          <span className="kw-right" onClick={onEye}>{EYE_SVG}</span>
+          {onToggle && <span className={`kw-act${pinned ? ' active' : ''}`} onClick={onToggle}>Toggle Window</span>}
+          {onEye && <span className="kw-right" onClick={onEye}>{EYE_SVG}</span>}
         </div>
       )}
     </div>
@@ -262,17 +266,17 @@ function App() {
   const [mailPos, setMailPos] = useState<{ left: string | number; top: string | number }>({ left: '3%', top: '12%' });
   const [musicPos, setMusicPos] = useState<{ left: string | number; top: string | number }>({ left: '66%', top: '12%' });
   const [finderPos, setFinderPos] = useState<{ left: string | number; top: string | number }>({ left: '8%', top: '46%' });
-  const [safariPos, setSafariPos] = useState<{ left: string | number; top: string | number }>({ left: '2%', top: '44%' });
-  const [textPos, setTextPos] = useState<{ left: string | number; top: string | number }>({ left: '56%', top: '40%' });
+  const [safariPos, setSafariPos] = useState<{ left: string | number; top: string | number }>({ left: '2%', top: '18%' });
+  const [textPos, setTextPos] = useState<{ left: string | number; top: string | number }>({ left: '56%', top: '16%' });
 
   // Kaos note state
   const [kaosOpen, setKaosOpen] = useState(true);
   const [kaosMinimized, setKaosMinimized] = useState(false);
-  const [kaosExpanded, setKaosExpanded] = useState(false);
-  const [kaosPinned, setKaosPinned] = useState(true);
-  const [kaosPrivacy, setKaosPrivacy] = useState(false);
-  const [kaosSearch, setKaosSearch] = useState(false);
-  const [kaosAccent, setKaosAccent] = useState(0);
+  const kaosExpanded = false;
+  const kaosPinned = true;
+  const kaosPrivacy = false;
+  const kaosSearch = false;
+  const kaosAccent = 0;
 
   const toggleApp = (app: string) => {
     setOpenApps(prev => {
@@ -551,21 +555,14 @@ function App() {
                     >
                       <KaosWin
                         title="kaos-notes.md"
-                        heading="Keep your kaos on top."
+                        heading="Keep your notes on top."
                         pinned={kaosPinned}
                         privacy={kaosPrivacy}
                         searchOpen={kaosSearch}
-                        onClose={() => setKaosOpen(false)}
-                        onMinimize={() => setKaosMinimized(true)}
-                        onExpand={() => setKaosExpanded(v => !v)}
-                        onSearch={() => setKaosSearch(v => !v)}
-                        onSearchClose={() => setKaosSearch(false)}
-                        onGear={() => setKaosAccent(a => (a + 1) % ACCENTS.length)}
-                        onToggle={() => setKaosPinned(v => !v)}
-                        onEye={() => setKaosPrivacy(v => !v)}
                         barHandlers={kaosHandlers}
+                        toolbar={false}
                       >
-                        <p className="kw-p">Notes that <b>float above every window</b> on your Mac — right where you left them. Catch the thought, then get back to work.<span className="kw-cursor"></span></p>
+                        <p className="kw-p">Kaos Notes that <b>float above every window</b> on your Mac — right where you left them. Catch the thought, then get back to work.<span className="kw-cursor"></span></p>
                       </KaosWin>
                     </div>
                   )}
