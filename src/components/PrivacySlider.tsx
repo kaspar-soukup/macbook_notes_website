@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, EyeOff } from 'lucide-react';
 
 export default function PrivacySlider() {
   const [pos, setPos] = useState(55);
@@ -39,21 +39,22 @@ export default function PrivacySlider() {
 
   return (
     <div className="ps-frame" ref={frameRef}>
-      {/* Your view: the note + editor, clipped to the LEFT of the divider */}
-      <div className="ps-yours" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-        <div className="ps-glow" aria-hidden />
-        <PrivacyContent />
+      <div className="ps-layer ps-theirs">
+        <PrivacyNote isHidden />
+      </div>
+      <div className="ps-layer ps-yours" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
+        <PrivacyNote />
       </div>
 
-      <div className="ps-label ps-label-left">Visible to you</div>
-      <div className="ps-label ps-label-right">Invisible to others</div>
+      <div className="ps-label ps-label-left">What you see</div>
+      <div className="ps-label ps-label-right">What they see</div>
 
       <div
         className="ps-divider"
         style={{ left: `${pos}%` }}
         role="slider"
         tabIndex={0}
-        aria-label="Compare what is visible to you versus invisible to others"
+        aria-label="Compare what you see versus what they see"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(pos)}
@@ -73,49 +74,34 @@ export default function PrivacySlider() {
   );
 }
 
-function PrivacyContent() {
+function PrivacyNote({ isHidden = false }: { isHidden?: boolean }) {
   return (
-    <div className="ps-content">
-      {/* Top: floating Kaos note */}
-      <div className="ps-card">
-        <div className="ps-card-head">
-          <Sparkles size={14} strokeWidth={2.4} className="ps-card-icon" />
-          <span className="ps-card-title">Kaos Note</span>
+    <div className={`ps-note${isHidden ? ' ps-note-hidden' : ''}`}>
+      <div className="ps-note-bar">
+        <div className="ps-note-dots" aria-hidden="true">
+          <span className="ps-dot ps-dot-red" />
+          <span className="ps-dot ps-dot-yellow" />
+          <span className="ps-dot ps-dot-green" />
         </div>
-        <div className="ps-card-body">
-          <p>
-            Add a check for missing <code>userId</code> b
-          </p>
-          <p>
-            Also handle <code>data.name</code> safely to
-          </p>
-        </div>
+        <div className="ps-note-title">Test Note</div>
+        <div className="ps-note-actions" aria-hidden="true" />
       </div>
-
-      {/* Bottom: editor window peeking up */}
-      <div className="ps-editor">
-        <div className="ps-editor-bar">
-          <span className="kw-lights"><i /><i /><i /></span>
-          <div className="ps-editor-url">
-            <span>fetchUserData</span>
-          </div>
+      <div className="ps-note-body">
+        <h4>Test Note</h4>
+        <ul>
+          <li>Bla bla bla</li>
+        </ul>
+      </div>
+      <div className="ps-note-footer">
+        <div className="ps-note-keys">
+          <span className="ps-key">^</span>
+          <span className="ps-key">shift</span>
+          <span className="ps-key">N</span>
+          <span className="ps-note-caption">Toggle Window</span>
         </div>
-        <div className="ps-editor-body">
-          <div className="ps-editor-gutter">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <span key={i}>{i + 1}</span>
-            ))}
-          </div>
-          <div className="ps-editor-code">
-            <div className="ps-code-line"><span className="tk-c">// Fetch data from API and display results</span></div>
-            <div className="ps-code-line" />
-            <div className="ps-code-line"><span className="tk-k">import</span> axios <span className="tk-k">from</span> <span className="tk-s">'axios'</span>;</div>
-            <div className="ps-code-line" />
-            <div className="ps-code-line"><span className="tk-k">async function</span> <span className="tk-f">fetchUserData</span>(userId) {'{'}</div>
-            <div className="ps-code-line">&nbsp;&nbsp;<span className="tk-k">try</span> {'{'}</div>
-            <div className="ps-code-line ghost" />
-            <div className="ps-code-line ghost short" />
-          </div>
+        <div className="ps-note-icons" aria-hidden="true">
+          <EyeOff size={12} strokeWidth={2} className="ps-note-eye" />
+          <span className="ps-note-grip" />
         </div>
       </div>
     </div>

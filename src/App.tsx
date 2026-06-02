@@ -58,6 +58,9 @@ const EYE_SVG = (
     <circle cx="12" cy="12" r="2.6" />
   </svg>
 );
+const APPLE_LOGO_SVG = (
+  <img src="/apple_logo.png" alt="Apple logo" style={{ width: 20, height: 20, objectFit: 'contain' }} />
+);
 const DOTS_SVG = (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
     <circle cx="4" cy="3" r="1.2" /><circle cx="10" cy="3" r="1.2" />
@@ -424,9 +427,9 @@ function App() {
             <h1 className="section-title hero-demo-h1">Notes wherever you need them.</h1>
             <p className="section-sub hero-demo-sub">Always on top, keyboard-first, local markdown editor, hidden from screen recordings.</p>
             <div style={{ marginTop: 28 }}>
-              <button onClick={handleDownloadStart} className="btn btn-primary" style={{ height: 'auto', padding: '12px 36px', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2, borderRadius: 28 }}>
-                <span style={{ fontWeight: 700, fontSize: 16.5, letterSpacing: '-0.01em' }}>Download for macOS</span>
-                <span style={{ fontWeight: 400, fontSize: 11.5, opacity: 0.85 }}>Free • Beta • Apple Silicon & Intel</span>
+              <button onClick={handleDownloadStart} className="btn btn-primary" style={{ height: 'auto', padding: '16px 36px', display: 'inline-flex', alignItems: 'center', gap: 10, borderRadius: 28 }}>
+                {APPLE_LOGO_SVG}
+                <span style={{ fontWeight: 700, fontSize: 16.5, letterSpacing: '-0.01em' }}>Get for Mac</span>
               </button>
               <p className="form-note" style={{ marginTop: 12 }}>Requires macOS 12 or newer</p>
             </div>
@@ -969,9 +972,9 @@ function App() {
           <div className="center reveal" style={{ maxWidth: 640, margin: '0 auto' }}>
             <h2>Bring a little order to the kaos.</h2>
             <p className="section-sub" style={{ margin: '0 auto 36px' }}>Download the free beta for macOS today.</p>
-            <button onClick={handleDownloadStart} className="btn btn-primary" style={{ height: 'auto', padding: '12px 36px', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2, borderRadius: 28 }}>
-              <span style={{ fontWeight: 700, fontSize: 16.5, letterSpacing: '-0.01em' }}>Download for macOS</span>
-              <span style={{ fontWeight: 400, fontSize: 11.5, opacity: 0.85 }}>Free • Beta • Apple Silicon & Intel</span>
+            <button onClick={handleDownloadStart} className="btn btn-primary" style={{ height: 'auto', padding: '16px 36px', display: 'inline-flex', alignItems: 'center', gap: 10, borderRadius: 28 }}>
+              {APPLE_LOGO_SVG}
+              <span style={{ fontWeight: 700, fontSize: 16.5, letterSpacing: '-0.01em' }}>Get for Mac</span>
             </button>
             <p className="form-note" style={{ marginTop: 12, color: 'rgba(255,255,255,0.5)' }}>Requires macOS 12 or newer</p>
           </div>
