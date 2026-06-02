@@ -1,6 +1,82 @@
 import { useEffect, useRef, useState } from 'react';
-import { Battery, Volume2, Compass, Mail as MailIcon, Music as MusicIcon, Pin, Shield, FileText, ArrowLeft, ArrowRight, Lock } from 'lucide-react';
+import { Battery, Volume2, Compass, Mail as MailIcon, Music as MusicIcon, Pin, Shield, FileText, ArrowLeft, ArrowRight, Lock, Globe, Plus, PanelLeft, Search, EyeOff, Keyboard, ArrowLeftToLine, ArrowRightToLine, Minimize2 } from 'lucide-react';
 import './styles/kaos.css';
+
+const SHORTCUTS = [
+  {
+    id: 'global_toggle',
+    title: 'Global Summon / Hide',
+    description: 'Instantly slide the notes panel into focus or hide it from any app.',
+    keys: ['Option', 'Shift', 'N'],
+    symbols: ['⌥', '⇧', 'N'],
+    icon: Globe
+  },
+  {
+    id: 'create_note',
+    title: 'Create New Note',
+    description: 'Create a new blank note and immediately focus the editor.',
+    keys: ['Cmd', 'N'],
+    symbols: ['⌘', 'N'],
+    icon: Plus
+  },
+  {
+    id: 'toggle_sidebar',
+    title: 'Toggle Sidebar Search',
+    description: 'Toggle the command palette search to browse or switch notes.',
+    keys: ['Cmd', '\\'],
+    symbols: ['⌘', '\\'],
+    icon: PanelLeft
+  },
+  {
+    id: 'search_in_note',
+    title: 'Find in Active Note',
+    description: 'Slide down the editor overlay to search and replace text.',
+    keys: ['Cmd', 'F'],
+    symbols: ['⌘', 'F'],
+    icon: Search
+  },
+  {
+    id: 'toggle_screen_capture',
+    title: 'Screen Recording Shield',
+    description: 'Toggle privacy mode to hide notes from screenshots & video shares.',
+    keys: ['Cmd', 'Shift', 'H'],
+    symbols: ['⌘', '⇧', 'H'],
+    icon: EyeOff
+  },
+  {
+    id: 'open_settings',
+    title: 'Shortcut Settings',
+    description: 'Open the interactive preferences to rebind your shortcuts.',
+    keys: ['Cmd', ','],
+    symbols: ['⌘', ','],
+    icon: Keyboard
+  },
+  {
+    id: 'snap_left',
+    title: 'Snap Window Left',
+    description: 'Instantly snap the floating window to the left side of your screen.',
+    keys: ['Cmd', 'Ctrl', 'Left'],
+    symbols: ['⌘', '⌃', '←'],
+    icon: ArrowLeftToLine
+  },
+  {
+    id: 'snap_right',
+    title: 'Snap Window Right',
+    description: 'Instantly snap the floating window to the right side of your screen.',
+    keys: ['Cmd', 'Ctrl', 'Right'],
+    symbols: ['⌘', '⌃', '→'],
+    icon: ArrowRightToLine
+  },
+  {
+    id: 'resize_small',
+    title: 'Reset Window Size',
+    description: 'Reset the window to its default compact layout (400x400px).',
+    keys: ['Cmd', 'Ctrl', '-'],
+    symbols: ['⌘', '⌃', '-'],
+    icon: Minimize2
+  }
+];
+
 
 const ACCENTS = ['', 'acc-blue', 'acc-violet', 'acc-green'];
 
@@ -160,6 +236,7 @@ function App() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [openApps, setOpenApps] = useState<Set<string>>(new Set(['safari', 'textedit']));
   const [fullscreenApp, setFullscreenApp] = useState<string | null>(null);
+  const [showSymbols, setShowSymbols] = useState(true);
 
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [downloadEmail, setDownloadEmail] = useState('');
@@ -628,6 +705,62 @@ function App() {
         </div>
       </section>
 
+      {/* SHORTCUTS */}
+      <section className="section alt" id="shortcuts">
+        <div className="wrap">
+          <div className="reveal" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 32, flexWrap: 'wrap', marginBottom: 48 }}>
+            <div style={{ maxWidth: 620 }}>
+              <p className="eyebrow">Keyboard-First Control</p>
+              <h2 className="section-title">Speed. Built in.</h2>
+              <p className="section-sub">
+                Summon the app, search notes, hide your screen, or snap windows instantly. Use symbols or switch to key names to learn the layouts.
+              </p>
+            </div>
+            <div className="shortcut-toggle-container">
+              <span className="toggle-label">Keyboard Legend</span>
+              <div className="toggle-switch-group">
+                <button 
+                  className={`toggle-switch-btn ${!showSymbols ? 'active' : ''}`} 
+                  onClick={() => setShowSymbols(false)}
+                >
+                  Keys
+                </button>
+                <button 
+                  className={`toggle-switch-btn ${showSymbols ? 'active' : ''}`} 
+                  onClick={() => setShowSymbols(true)}
+                >
+                  Symbols
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="shortcuts-grid">
+            {SHORTCUTS.map((shortcut) => {
+              const IconComponent = shortcut.icon;
+              return (
+                <div key={shortcut.id} className="shortcut-card reveal">
+                  <div className="shortcut-card-header">
+                    <div className="shortcut-icon-wrapper">
+                      <IconComponent size={20} strokeWidth={2} />
+                    </div>
+                    <div className="shortcut-kbd-group">
+                      {(showSymbols ? shortcut.symbols : shortcut.keys).map((key, i) => (
+                        <kbd key={i} className="kbd-key-styled">
+                          {key}
+                        </kbd>
+                      ))}
+                    </div>
+                  </div>
+                  <h3 className="shortcut-card-title">{shortcut.title}</h3>
+                  <p className="shortcut-card-desc">{shortcut.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* HOW IT WORKS */}
       <section className="section" id="how">
         <div className="wrap">
@@ -706,6 +839,7 @@ function App() {
               <div className="col">
                 <h5>Product</h5>
                 <a href="#features">Features</a>
+                <a href="#shortcuts">Shortcuts</a>
                 <a href="#how">How it works</a>
                 <a href="#faq">FAQ</a>
               </div>
@@ -734,6 +868,7 @@ function App() {
         </a>
         <nav className="fn-links">
           <a href="#features">Features</a>
+          <a href="#shortcuts">Shortcuts</a>
           <a href="#how">How&nbsp;it&nbsp;works</a>
           <a href="#faq">FAQ</a>
         </nav>

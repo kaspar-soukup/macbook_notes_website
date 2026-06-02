@@ -1125,3 +1125,138 @@ body.demo-fs .always-on-top-badge {
 /* mark invert for dark footer */
 .mark-invert { filter: invert(1); }
 
+/* ============================================================
+   SHORTCUTS GRID & CARDS
+   ============================================================ */
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.shortcut-card {
+  background: var(--white);
+  border: 1px solid var(--hair);
+  border-radius: var(--radius-card);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  transition: transform .35s var(--ease), border-color .35s var(--ease), box-shadow .35s var(--ease);
+}
+.shortcut-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in oklab, var(--accent) 40%, var(--hair));
+  box-shadow: var(--shadow-card);
+}
+.shortcut-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.shortcut-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklab, var(--accent) 10%, white);
+  color: var(--accent-ink);
+  transition: background .25s var(--ease), color .25s var(--ease);
+}
+.shortcut-card:hover .shortcut-icon-wrapper {
+  background: var(--accent);
+  color: var(--btn-text);
+}
+.shortcut-kbd-group {
+  display: flex;
+  gap: 5px;
+}
+.kbd-key-styled {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-bottom: 2.5px solid color-mix(in oklab, var(--hair) 80%, black);
+  border-radius: 6px;
+  min-width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0 6px;
+  color: var(--ink);
+  box-shadow: 0 1px 1px rgba(0,0,0,0.03);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.shortcut-card:hover .kbd-key-styled {
+  background: var(--white);
+  border-color: color-mix(in oklab, var(--accent) 30%, var(--hair));
+}
+.shortcut-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.015em;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+.shortcut-card-desc {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Shortcuts Legend Toggle */
+.shortcut-toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--hair);
+}
+.toggle-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: 12px;
+}
+.toggle-switch-group {
+  display: flex;
+  gap: 2px;
+}
+.toggle-switch-btn {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--muted);
+  transition: all .2s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.toggle-switch-btn.active {
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+}
+
+@media (max-width: 960px) {
+  .shortcuts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .shortcuts-grid {
+    grid-template-columns: 1fr;
+  }
+  .reveal:has(.shortcut-toggle-container) {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 20px;
+  }
+}
+
+
