@@ -790,6 +790,26 @@ body.dir-a .card:hover { border-color: color-mix(in oklab, var(--accent) 40%, va
   font-size: 13.5px;
 }
 
+/* Hero (demo-as-hero) typography */
+.hero-demo { padding-top: 80px; }
+.hero-demo-h1 {
+  font-size: clamp(44px, 6vw, 78px);
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: 1.02;
+  margin-bottom: 18px;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.hero-demo-sub {
+  font-size: clamp(15px, 1.4vw, 18px);
+  color: var(--muted);
+  max-width: 640px;
+  margin: 0 auto;
+  line-height: 1.55;
+  text-wrap: balance;
+}
+
 /* ============================================================
    DEMO SCENE — windowed container + fullscreen mode
    ============================================================ */

@@ -271,30 +271,20 @@ function App() {
 
   return (
     <>
-      {/* HERO LAND */}
-      <section className="hero-land" id="hero-land" ref={heroLandRef}>
-        <div className="wrap hero-land-wrap">
-          <p className="eyebrow pill">Floating sticky notes for Mac</p>
-          <h1 className="hero-land-h1">Always<br /><span className="hero-accent">on top.</span></h1>
-          <p className="hero-land-sub">Notes that float above every window on your Mac — right where you left them. Catch the thought, keep the calm.</p>
-          <form className="waitlist center-x" id="waitlist-hero" noValidate
-            onSubmit={e => handleWaitlist(e, heroEmail, setHeroSubmitted, setHeroEmail)}>
-            <input type="email" placeholder="you@email.com" aria-label="Email address"
-              value={heroEmail} onChange={e => setHeroEmail(e.target.value)} />
-            <button type="submit" className="btn btn-primary">Join the waitlist</button>
-          </form>
-          {heroSubmitted && <p className="form-note form-done" style={{ marginTop: 12 }}>You're on the list — we'll be in touch. ✦</p>}
-        </div>
-      </section>
-
-
-      {/* DEMO SCENE */}
-      <section className="section demo-scene" id="demo-scene">
+      {/* HERO — live desktop mockup */}
+      <section className="section demo-scene hero-demo" id="hero-land" ref={heroLandRef}>
         <div className="wrap">
-          <div className="reveal center" style={{ maxWidth: 620, margin: '0 auto 48px' }}>
-            <p className="eyebrow" style={{ marginLeft: 'auto', marginRight: 'auto' }}>See it in action</p>
-            <h2 className="section-title">It just feels like Mac.</h2>
-            <p className="section-sub">Native, fast, and right at home in your menu bar.</p>
+          <div className="reveal center" style={{ maxWidth: 760, margin: '0 auto 40px' }}>
+            <h1 className="section-title hero-demo-h1">Notes wherever you need them.</h1>
+            <p className="section-sub hero-demo-sub">Always on top · Keyboard-first · Markdown editor · Hidden from screen recordings</p>
+            <form className="waitlist center-x" id="waitlist-hero" noValidate
+              onSubmit={e => handleWaitlist(e, heroEmail, setHeroSubmitted, setHeroEmail)}
+              style={{ marginTop: 28 }}>
+              <input type="email" placeholder="you@email.com" aria-label="Email address"
+                value={heroEmail} onChange={e => setHeroEmail(e.target.value)} />
+              <button type="submit" className="btn btn-primary">Join the waitlist</button>
+            </form>
+            {heroSubmitted && <p className="form-note form-done" style={{ marginTop: 12 }}>You're on the list — we'll be in touch. ✦</p>}
           </div>
         </div>
         <div className="demo-pad">
