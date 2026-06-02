@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { Battery, Volume2, Compass, Mail as MailIcon, Music as MusicIcon, Pin, Shield, FileText, ArrowLeft, ArrowRight, Lock } from 'lucide-react';
 import './styles/kaos.css';
+
+const ACCENTS = ['', 'acc-blue', 'acc-violet', 'acc-green'];
 
 const SEARCH_SVG = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -18,39 +21,131 @@ const EYE_SVG = (
     <circle cx="12" cy="12" r="2.6"/>
   </svg>
 );
-const CHECK_SVG = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 6L9 17l-5-5"/>
-  </svg>
-);
-
-function KaosWin({ title, heading, children, toolbar = true }: {
+interface KaosWinProps {
   title: string;
   heading?: string;
   children: React.ReactNode;
   toolbar?: boolean;
-}) {
+  onClose?: () => void;
+  onMinimize?: () => void;
+  onExpand?: () => void;
+  onSearch?: () => void;
+  onGear?: () => void;
+  onToggle?: () => void;
+  onEye?: () => void;
+  pinned?: boolean;
+  privacy?: boolean;
+  searchOpen?: boolean;
+  onSearchClose?: () => void;
+  barHandlers?: React.HTMLAttributes<HTMLDivElement>;
+}
+
+function KaosWin({
+  title, heading, children, toolbar = true,
+  onClose, onMinimize, onExpand, onSearch, onGear, onToggle, onEye,
+  pinned, privacy, searchOpen, onSearchClose, barHandlers,
+}: KaosWinProps) {
+  const interactive = Boolean(onClose || onMinimize || onExpand);
   return (
-    <div className="kaos-win">
-      <div className="kw-bar">
-        <span className="kw-lights"><i></i><i></i><i></i></span>
+    <div className={`kaos-win${interactive ? ' kw-interactive' : ''}${privacy ? ' kw-privacy' : ''}`}>
+      {interactive && pinned && (
+        <div className="kw-pin-badge" title="Always on top">
+          <Pin size={12} strokeWidth={2.4} fill="currentColor" />
+        </div>
+      )}
+      {interactive && privacy && (
+        <div className="kw-privacy-badge" title="Hidden from screen recordings">
+          <Shield size={11} strokeWidth={2.4} />
+          Private
+        </div>
+      )}
+      <div className="kw-bar" {...barHandlers}>
+        <span className="kw-lights">
+          <i onClick={onClose}></i>
+          <i onClick={onMinimize}></i>
+          <i onClick={onExpand}></i>
+        </span>
         <span className="kw-title">{title}</span>
-        <span className="kw-gear">{SEARCH_SVG}</span>
+        <span className="kw-gear" onClick={onSearch}>{SEARCH_SVG}</span>
       </div>
+      {searchOpen && (
+        <div className="kw-search">
+          {SEARCH_SVG}
+          <input type="text" placeholder="Search this note…" autoFocus />
+          <span className="kw-search-close" onClick={onSearchClose}>esc</span>
+        </div>
+      )}
       <div className="kw-body">
         {heading && <div className="kw-h">{heading}</div>}
         {children}
       </div>
       {toolbar && (
         <div className="kw-toolbar">
-          {GEAR_SVG}
+          <span className="kw-tool-gear" onClick={onGear}>{GEAR_SVG}</span>
           <span className="kw-keys"><span className="k">⌃</span><span className="k">⇧</span><span className="k">N</span></span>
-          <span className="kw-act">Toggle Window</span>
-          <span className="kw-right">{EYE_SVG}</span>
+          <span className={`kw-act${pinned ? ' active' : ''}`} onClick={onToggle}>Toggle Window</span>
+          <span className="kw-right" onClick={onEye}>{EYE_SVG}</span>
         </div>
       )}
     </div>
   );
+}
+
+type DragState = { dragging: boolean; sx: number; sy: number; baseL: number; baseT: number };
+type DragOpts = {
+  parentSelector?: string;
+  excludeSelector?: string;
+  bumpZIndex?: boolean;
+  onDragEnd?: (left: number, top: number) => void;
+};
+
+function makeDragHandlers(
+  dragRef: React.MutableRefObject<DragState>,
+  surfaceRef: React.RefObject<HTMLDivElement>,
+  opts: DragOpts = {}
+) {
+  const parentSelector = opts.parentSelector ?? '.app-win';
+  const excludeSelector = opts.excludeSelector ?? '.aw-lights';
+  const bumpZIndex = opts.bumpZIndex ?? true;
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  const finish = (e: React.PointerEvent<HTMLDivElement>) => {
+    const wasDragging = dragRef.current.dragging;
+    dragRef.current.dragging = false;
+    const win = e.currentTarget.closest(parentSelector) as HTMLElement | null;
+    win?.classList.remove('dragging');
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
+    if (wasDragging && win && opts.onDragEnd) {
+      opts.onDragEnd(win.offsetLeft, win.offsetTop);
+    }
+  };
+  return {
+    onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+      if ((e.target as Element).closest(excludeSelector)) return;
+      const win = e.currentTarget.closest(parentSelector) as HTMLElement;
+      if (!win || win.classList.contains('fullscreen')) return;
+      const d = dragRef.current;
+      d.dragging = true;
+      d.sx = e.clientX; d.sy = e.clientY;
+      d.baseL = win.offsetLeft; d.baseT = win.offsetTop;
+      win.style.left = d.baseL + 'px'; win.style.top = d.baseT + 'px';
+      if (bumpZIndex) win.style.zIndex = '25';
+      win.classList.add('dragging');
+      e.currentTarget.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    },
+    onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+      const d = dragRef.current;
+      if (!d.dragging) return;
+      const surface = surfaceRef.current;
+      const win = e.currentTarget.closest(parentSelector) as HTMLElement;
+      if (!surface || !win) return;
+      const nW = win.offsetWidth;
+      win.style.left = clamp(d.baseL + (e.clientX - d.sx), -nW * 0.18, surface.clientWidth - nW * 0.82) + 'px';
+      win.style.top = clamp(d.baseT + (e.clientY - d.sy), 6, surface.clientHeight - 40) + 'px';
+    },
+    onPointerUp: finish,
+    onPointerCancel: finish,
+  };
 }
 
 const FAQS = [
@@ -67,11 +162,79 @@ function App() {
   const [footEmail, setFootEmail] = useState('');
   const [heroSubmitted, setHeroSubmitted] = useState(false);
   const [footSubmitted, setFootSubmitted] = useState(false);
+  const [openApps, setOpenApps] = useState<Set<string>>(new Set(['safari', 'textedit']));
+  const [fullscreenApp, setFullscreenApp] = useState<string | null>(null);
+
+  // Persisted positions (so drag survives fullscreen toggle)
+  const [mailPos, setMailPos] = useState<{ left: string | number; top: string | number }>({ left: '3%', top: '12%' });
+  const [musicPos, setMusicPos] = useState<{ left: string | number; top: string | number }>({ left: '66%', top: '12%' });
+  const [finderPos, setFinderPos] = useState<{ left: string | number; top: string | number }>({ left: '8%', top: '46%' });
+  const [safariPos, setSafariPos] = useState<{ left: string | number; top: string | number }>({ left: '2%', top: '44%' });
+  const [textPos, setTextPos] = useState<{ left: string | number; top: string | number }>({ left: '56%', top: '40%' });
+
+  // Kaos note state
+  const [kaosOpen, setKaosOpen] = useState(true);
+  const [kaosMinimized, setKaosMinimized] = useState(false);
+  const [kaosExpanded, setKaosExpanded] = useState(false);
+  const [kaosPinned, setKaosPinned] = useState(true);
+  const [kaosPrivacy, setKaosPrivacy] = useState(false);
+  const [kaosSearch, setKaosSearch] = useState(false);
+  const [kaosAccent, setKaosAccent] = useState(0);
+
+  const toggleApp = (app: string) => {
+    setOpenApps(prev => {
+      const next = new Set(prev);
+      if (next.has(app)) {
+        next.delete(app);
+        if (fullscreenApp === app) setFullscreenApp(null);
+      } else {
+        next.add(app);
+      }
+      return next;
+    });
+  };
+  const closeApp = (app: string) => {
+    setOpenApps(prev => { const next = new Set(prev); next.delete(app); return next; });
+    if (fullscreenApp === app) setFullscreenApp(null);
+  };
+  const toggleFullscreen = (app: string) => {
+    if (!openApps.has(app)) return;
+    setFullscreenApp(prev => prev === app ? null : app);
+  };
+  const onKaosDockClick = () => {
+    if (!kaosOpen) { setKaosOpen(true); setKaosMinimized(false); return; }
+    if (kaosMinimized) { setKaosMinimized(false); return; }
+  };
+
   const heroLandRef = useRef<HTMLElement>(null);
   const ldSurfaceRef = useRef<HTMLDivElement>(null);
   const ldNoteRef = useRef<HTMLDivElement>(null);
-  const tryItSurfaceRef = useRef<HTMLDivElement>(null);
-  const tryItHintRef = useRef<HTMLDivElement>(null);
+  const mailDrag = useRef<DragState>({ dragging: false, sx: 0, sy: 0, baseL: 0, baseT: 0 });
+  const musicDrag = useRef<DragState>({ dragging: false, sx: 0, sy: 0, baseL: 0, baseT: 0 });
+  const finderDrag = useRef<DragState>({ dragging: false, sx: 0, sy: 0, baseL: 0, baseT: 0 });
+  const safariDrag = useRef<DragState>({ dragging: false, sx: 0, sy: 0, baseL: 0, baseT: 0 });
+  const textDrag = useRef<DragState>({ dragging: false, sx: 0, sy: 0, baseL: 0, baseT: 0 });
+  const kaosDrag = useRef<DragState>({ dragging: false, sx: 0, sy: 0, baseL: 0, baseT: 0 });
+  const mailHandlers = makeDragHandlers(mailDrag, ldSurfaceRef, {
+    onDragEnd: (l, t) => setMailPos({ left: l, top: t }),
+  });
+  const musicHandlers = makeDragHandlers(musicDrag, ldSurfaceRef, {
+    onDragEnd: (l, t) => setMusicPos({ left: l, top: t }),
+  });
+  const finderHandlers = makeDragHandlers(finderDrag, ldSurfaceRef, {
+    onDragEnd: (l, t) => setFinderPos({ left: l, top: t }),
+  });
+  const safariHandlers = makeDragHandlers(safariDrag, ldSurfaceRef, {
+    onDragEnd: (l, t) => setSafariPos({ left: l, top: t }),
+  });
+  const textHandlers = makeDragHandlers(textDrag, ldSurfaceRef, {
+    onDragEnd: (l, t) => setTextPos({ left: l, top: t }),
+  });
+  const kaosHandlers = makeDragHandlers(kaosDrag, ldSurfaceRef, {
+    parentSelector: '.ld-note',
+    excludeSelector: '.kw-lights, .kw-gear, .kw-toolbar, .kw-search',
+    bumpZIndex: false,
+  });
 
   // Body classes
   useEffect(() => {
@@ -93,222 +256,6 @@ function App() {
     return () => io.disconnect();
   }, []);
 
-  // Hero note drag
-  useEffect(() => {
-    const surface = ldSurfaceRef.current;
-    const note = ldNoteRef.current;
-    if (!surface || !note) return;
-    let zTop = 30;
-    const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-    const handle = (note.querySelector('.kw-bar') as HTMLElement) || note;
-    let sx = 0, sy = 0, baseL = 0, baseT = 0, dragging = false;
-
-    const onNoteDown = () => { note.style.zIndex = String(++zTop); };
-    const onHandleDown = (e: PointerEvent) => {
-      if ((e.target as Element).closest('.kw-lights') || (e.target as Element).closest('.kw-gear')) return;
-      dragging = true;
-      note.classList.add('dragging');
-      sx = e.clientX; sy = e.clientY;
-      baseL = note.offsetLeft; baseT = note.offsetTop;
-      note.style.left = baseL + 'px'; note.style.top = baseT + 'px';
-      handle.setPointerCapture(e.pointerId);
-      e.preventDefault();
-    };
-    const onHandleMove = (e: PointerEvent) => {
-      if (!dragging) return;
-      const sw = surface.clientWidth, sh = surface.clientHeight;
-      const nW = note.offsetWidth;
-      let nl = baseL + (e.clientX - sx);
-      let nt = baseT + (e.clientY - sy);
-      nl = clamp(nl, -nW * 0.18, sw - nW * 0.82);
-      nt = clamp(nt, 6, sh - 40);
-      note.style.left = nl + 'px'; note.style.top = nt + 'px';
-    };
-    const onEnd = (e: PointerEvent) => {
-      if (!dragging) return;
-      dragging = false;
-      note.classList.remove('dragging');
-      try { handle.releasePointerCapture(e.pointerId); } catch (_) {}
-    };
-
-    note.addEventListener('pointerdown', onNoteDown);
-    handle.addEventListener('pointerdown', onHandleDown as EventListener);
-    handle.addEventListener('pointermove', onHandleMove as EventListener);
-    handle.addEventListener('pointerup', onEnd as EventListener);
-    handle.addEventListener('pointercancel', onEnd as EventListener);
-    return () => {
-      note.removeEventListener('pointerdown', onNoteDown);
-      handle.removeEventListener('pointerdown', onHandleDown as EventListener);
-      handle.removeEventListener('pointermove', onHandleMove as EventListener);
-      handle.removeEventListener('pointerup', onEnd as EventListener);
-      handle.removeEventListener('pointercancel', onEnd as EventListener);
-    };
-  }, []);
-
-  // Try-it sandbox
-  useEffect(() => {
-    const surface = tryItSurfaceRef.current;
-    const hint = tryItHintRef.current;
-    const spawnBtn = document.getElementById('stage-spawn');
-    const hintTap = document.getElementById('hint-tap');
-    const stage = document.getElementById('kaos-stage');
-    if (!surface || !spawnBtn) return;
-    const surf = surface;
-
-    let zTop = 10, count = 0;
-    let activeNote: HTMLElement | null = null;
-    const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-
-    const SEEDS = [
-      { title: 'New note', h: 'Hello 👋', ph: 'Type anything…', body: 'Drag me by the title bar.\nThen drop another with ⌃⇧N.' },
-      { title: 'quick.md', h: 'Idea', ph: "What's on your mind?", body: 'Notes float above everything — and hide themselves when you share your screen.' },
-      { title: 'today.md', h: 'Today', ph: 'Add a to-do…', body: '• Try the shortcut\n• Drag this around\n• Pile them up' },
-      { title: 'Reminder', h: "Don't forget", ph: 'Jot it down…', body: 'Call mom before 6pm 🌿' },
-      { title: 'New note', h: '', ph: 'Start typing…', body: '' },
-    ];
-    const SEARCH = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>';
-    const GEAR = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2M6.3 6.3l1.4 1.4M16.3 16.3l1.4 1.4M17.7 6.3l-1.4 1.4M7.7 16.3l-1.4 1.4"/></svg>';
-    const EYE = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="2.6"/></svg>';
-
-    function placeCaretEnd(node: HTMLElement) {
-      node.focus();
-      const sel = window.getSelection();
-      if (!sel) return;
-      const range = document.createRange();
-      range.selectNodeContents(node);
-      range.collapse(false);
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-
-    function stageInView() {
-      if (!stage) return false;
-      const r = stage.getBoundingClientRect();
-      return r.top < window.innerHeight * 0.85 && r.bottom > window.innerHeight * 0.15;
-    }
-
-    function bringToFront(el: HTMLElement) { el.style.zIndex = String(++zTop); }
-
-    function wireClose(el: HTMLElement) {
-      const closeBtn = el.querySelector('.kw-lights i:first-child') as HTMLElement;
-      closeBtn.addEventListener('pointerdown', e => e.stopPropagation());
-      closeBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        el.classList.add('closing');
-        el.addEventListener('animationend', () => {
-          el.remove();
-          if (activeNote === el) activeNote = null;
-          if (!surf.querySelector('.demo-note') && hint) hint.classList.remove('gone');
-        }, { once: true });
-      });
-    }
-
-    function wireDrag(el: HTMLElement) {
-      const handle = el.querySelector('.kw-bar') as HTMLElement;
-      let startX = 0, startY = 0, baseL = 0, baseT = 0, dragging = false;
-      el.addEventListener('pointerdown', () => bringToFront(el));
-      handle.addEventListener('pointerdown', (e: PointerEvent) => {
-        if ((e.target as Element).closest('.kw-lights') || (e.target as Element).closest('.kw-gear')) return;
-        dragging = true;
-        el.classList.add('dragging');
-        startX = e.clientX; startY = e.clientY;
-        baseL = parseFloat(el.style.left); baseT = parseFloat(el.style.top);
-        handle.setPointerCapture(e.pointerId);
-        e.preventDefault();
-      });
-      handle.addEventListener('pointermove', (e: PointerEvent) => {
-        if (!dragging) return;
-        const sw = surf.clientWidth, sh = surf.clientHeight;
-        const nW = el.offsetWidth;
-        let nl = baseL + (e.clientX - startX);
-        let nt = baseT + (e.clientY - startY);
-        nl = clamp(nl, 6, Math.max(6, sw - nW - 6));
-        nt = clamp(nt, 6, Math.max(6, sh - 34));
-        el.style.left = nl + 'px'; el.style.top = nt + 'px';
-      });
-      const end = (e: PointerEvent) => {
-        if (!dragging) return;
-        dragging = false;
-        el.classList.remove('dragging');
-        try { handle.releasePointerCapture(e.pointerId); } catch (_) {}
-      };
-      handle.addEventListener('pointerup', end);
-      handle.addEventListener('pointercancel', end);
-    }
-
-    function makeNote(seed: typeof SEEDS[0]) {
-      const W = 304;
-      const el = document.createElement('div');
-      el.className = 'demo-note';
-      el.style.width = W + 'px';
-      el.innerHTML =
-        '<div class="kaos-win" style="width:' + W + 'px">' +
-          '<div class="kw-bar">' +
-            '<span class="kw-lights"><i title="Close"></i><i></i><i></i></span>' +
-            '<span class="kw-title">' + seed.title + '</span>' +
-            '<span class="kw-gear">' + SEARCH + '</span>' +
-          '</div><div class="kw-body">' +
-            (seed.h !== undefined ? '<div class="kw-h" contenteditable="true" spellcheck="false">' + (seed.h || '') + '</div>' : '') +
-            '<div class="kw-edit" contenteditable="true" spellcheck="false" data-ph="' + seed.ph + '">' +
-              (seed.body || '').replace(/\n/g, '<br>') +
-            '</div></div>' +
-          '<div class="kw-toolbar">' + GEAR +
-            '<span class="kw-keys"><span class="k">⌃</span><span class="k">⇧</span><span class="k">N</span></span>' +
-            '<span class="kw-act">Toggle Window</span>' +
-            '<span class="kw-right">' + EYE + '</span>' +
-          '</div></div>';
-
-      const sw = surf.clientWidth, sh = surf.clientHeight;
-      const off = (count % 7) * 26;
-      let left = Math.round(sw / 2 - W / 2 - 40 + off);
-      let top = Math.round(sh * 0.18 + off);
-      left = clamp(left, 12, Math.max(12, sw - W - 12));
-      top = clamp(top, 12, Math.max(12, sh - 150));
-      el.style.left = left + 'px'; el.style.top = top + 'px';
-
-      surf.appendChild(el);
-      count++;
-      bringToFront(el);
-      wireDrag(el);
-      wireClose(el);
-      const body = el.querySelector('.kw-edit') as HTMLElement;
-      requestAnimationFrame(() => placeCaretEnd(body));
-      activeNote = el;
-      return el;
-    }
-
-    function spawn(seedOverride?: typeof SEEDS[0]) {
-      const seed = seedOverride ?? SEEDS[count % SEEDS.length];
-      if (hint && !hint.classList.contains('gone')) hint.classList.add('gone');
-      if (activeNote) {
-        const prev = activeNote;
-        activeNote = null;
-        prev.classList.add('closing');
-        prev.addEventListener('animationend', () => { prev.remove(); activeNote = makeNote(seed); }, { once: true });
-      } else {
-        activeNote = makeNote(seed);
-      }
-    }
-
-    const onSpawn = () => spawn();
-    const onHintTap = () => spawn();
-    const onKeyDown = (e: KeyboardEvent) => {
-      const isN = e.key === 'n' || e.key === 'N' || e.code === 'KeyN';
-      if (e.ctrlKey && e.shiftKey && !e.altKey && isN && stageInView()) {
-        e.preventDefault();
-        spawn();
-      }
-    };
-
-    spawnBtn.addEventListener('click', onSpawn);
-    if (hintTap) hintTap.addEventListener('click', onHintTap);
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      spawnBtn.removeEventListener('click', onSpawn);
-      if (hintTap) hintTap.removeEventListener('click', onHintTap);
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, []);
 
   function handleWaitlist(e: React.FormEvent, email: string, setSubmitted: (v: boolean) => void, setEmail: (v: string) => void) {
     e.preventDefault();
@@ -336,11 +283,20 @@ function App() {
               value={heroEmail} onChange={e => setHeroEmail(e.target.value)} />
             <button type="submit" className="btn btn-primary">Join the waitlist</button>
           </form>
+          {heroSubmitted && <p className="form-note form-done" style={{ marginTop: 12 }}>You're on the list — we'll be in touch. ✦</p>}
         </div>
       </section>
 
+
       {/* DEMO SCENE */}
-      <section className="demo-scene" id="demo-scene">
+      <section className="section demo-scene" id="demo-scene">
+        <div className="wrap">
+          <div className="reveal center" style={{ maxWidth: 620, margin: '0 auto 48px' }}>
+            <p className="eyebrow" style={{ marginLeft: 'auto', marginRight: 'auto' }}>See it in action</p>
+            <h2 className="section-title">It just feels like Mac.</h2>
+            <p className="section-sub">Native, fast, and right at home in your menu bar.</p>
+          </div>
+        </div>
         <div className="demo-pad">
           <div className="demo-outer reveal" id="demo-outer">
             <div className="hero-d">
@@ -354,15 +310,24 @@ function App() {
                   <span className="mb">Note</span>
                   <span className="mb">Window</span>
                   <span className="mb">Help</span>
-                  <span className="mb-right" style={{ marginRight: 10 }}>🔋&nbsp;&nbsp;🔊&nbsp;&nbsp;<b>Sat 9:41</b></span>
+                  <div className="mb-right" style={{ marginRight: 10 }}>
+                    <Volume2 size={13} strokeWidth={2} style={{ opacity: 0.65 }} />
+                    <Battery size={13} strokeWidth={2} style={{ opacity: 0.65 }} />
+                    <b>Sat 9:41</b>
+                  </div>
                 </div>
 
                 {/* Drag surface */}
                 <div className="ld-surface" id="ld-surface" ref={ldSurfaceRef}>
                   {/* Background windows */}
-                  <div className="app-win awin-mail" style={{ left: '5%', top: '50%', width: 540, zIndex: 1 }}>
-                    <div className="aw-bar">
-                      <span className="aw-lights"><i></i><i></i><i></i></span>
+                  {openApps.has('mail') && (
+                  <div className={`app-win awin-mail${fullscreenApp === 'mail' ? ' fullscreen' : ''}`} style={fullscreenApp === 'mail' ? {} : { left: mailPos.left, top: mailPos.top, width: 540, zIndex: 1 }}>
+                    <div className="aw-bar" {...mailHandlers}>
+                      <span className="aw-lights">
+                        <i className="clickable" onClick={() => closeApp('mail')}></i>
+                        <i></i>
+                        <i className="clickable" onClick={() => toggleFullscreen('mail')}></i>
+                      </span>
                       <span className="aw-title">Mail — Inbox</span>
                     </div>
                     <div className="aw-body mailbody">
@@ -378,10 +343,16 @@ function App() {
                       </div>
                     </div>
                   </div>
+                  )}
 
-                  <div className="app-win awin-music" style={{ left: '55%', top: '41%', width: 344, zIndex: 2 }}>
-                    <div className="aw-bar">
-                      <span className="aw-lights"><i></i><i></i><i></i></span>
+                  {openApps.has('music') && (
+                  <div className={`app-win awin-music${fullscreenApp === 'music' ? ' fullscreen' : ''}`} style={fullscreenApp === 'music' ? {} : { left: musicPos.left, top: musicPos.top, width: 344, zIndex: 2 }}>
+                    <div className="aw-bar" {...musicHandlers}>
+                      <span className="aw-lights">
+                        <i className="clickable" onClick={() => closeApp('music')}></i>
+                        <i></i>
+                        <i className="clickable" onClick={() => toggleFullscreen('music')}></i>
+                      </span>
                       <span className="aw-title">Now Playing</span>
                     </div>
                     <div className="aw-body musicbody">
@@ -391,23 +362,198 @@ function App() {
                       <div className="m-ctrl"><i></i><i className="big"></i><i></i></div>
                     </div>
                   </div>
+                  )}
 
-                  {/* Floating draggable note */}
-                  <div className="ld-note" ref={ldNoteRef} style={{ left: 'calc(50% - 180px)', top: '10%' }}>
-                    <KaosWin title="kaos-notes.md" heading="Keep your kaos on top.">
+                  {openApps.has('finder') && (
+                  <div className={`app-win awin-finder${fullscreenApp === 'finder' ? ' fullscreen' : ''}`} style={fullscreenApp === 'finder' ? {} : { left: finderPos.left, top: finderPos.top, width: 500, zIndex: 3 }}>
+                    <div className="aw-bar" {...finderHandlers}>
+                      <span className="aw-lights">
+                        <i className="clickable" onClick={() => closeApp('finder')}></i>
+                        <i></i>
+                        <i className="clickable" onClick={() => toggleFullscreen('finder')}></i>
+                      </span>
+                      <span className="aw-title">Finder — Documents</span>
+                    </div>
+                    <div className="aw-body finderbody">
+                      <div className="finder-side">
+                        <div className="fs-section">Favorites</div>
+                        <div className="fs-item on"><span className="fs-dot" style={{ background: '#5ac8fa' }} />Documents</div>
+                        <div className="fs-item"><span className="fs-dot" style={{ background: '#ffcc00' }} />Downloads</div>
+                        <div className="fs-item"><span className="fs-dot" style={{ background: '#ff9500' }} />Desktop</div>
+                        <div className="fs-item"><span className="fs-dot" style={{ background: '#af52de' }} />Pictures</div>
+                        <div className="fs-section">iCloud</div>
+                        <div className="fs-item"><span className="fs-dot" style={{ background: '#34c759' }} />Shared</div>
+                      </div>
+                      <div className="finder-main">
+                        <div className="finder-grid">
+                          {Array.from({ length: 8 }).map((_, i) => (
+                            <div key={i} className="finder-file">
+                              <div className="ff-thumb" />
+                              <div className="ff-label" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  )}
+
+                  {openApps.has('safari') && (
+                  <div className={`app-win awin-safari${fullscreenApp === 'safari' ? ' fullscreen' : ''}`} style={fullscreenApp === 'safari' ? {} : { left: safariPos.left, top: safariPos.top, width: 440, zIndex: 4 }}>
+                    <div className="aw-bar safari-bar" {...safariHandlers}>
+                      <span className="aw-lights">
+                        <i className="clickable" onClick={() => closeApp('safari')}></i>
+                        <i></i>
+                        <i className="clickable" onClick={() => toggleFullscreen('safari')}></i>
+                      </span>
+                      <div className="safari-nav">
+                        <ArrowLeft size={13} strokeWidth={2.2} color="#a1a1a6" />
+                        <ArrowRight size={13} strokeWidth={2.2} color="#d2d2d6" />
+                      </div>
+                      <div className="safari-url">
+                        <Lock size={10} strokeWidth={2.4} color="#86868b" />
+                        <span>kaosnotes.app</span>
+                      </div>
+                    </div>
+                    <div className="aw-body safaribody">
+                      <div className="safari-page">
+                        <div className="sp-hero" />
+                        <div className="sp-line w70" />
+                        <div className="sp-line w50" />
+                        <div className="sp-grid">
+                          <div className="sp-card" />
+                          <div className="sp-card" />
+                          <div className="sp-card" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  )}
+
+                  {openApps.has('textedit') && (
+                  <div className={`app-win awin-text${fullscreenApp === 'textedit' ? ' fullscreen' : ''}`} style={fullscreenApp === 'textedit' ? {} : { left: textPos.left, top: textPos.top, width: 420, zIndex: 5 }}>
+                    <div className="aw-bar" {...textHandlers}>
+                      <span className="aw-lights">
+                        <i className="clickable" onClick={() => closeApp('textedit')}></i>
+                        <i></i>
+                        <i className="clickable" onClick={() => toggleFullscreen('textedit')}></i>
+                      </span>
+                      <span className="aw-title">untitled.txt — TextEdit</span>
+                    </div>
+                    <div className="aw-body textbody">
+                      <div className="text-toolbar">
+                        <span className="tt-style">B</span>
+                        <span className="tt-style tt-i">I</span>
+                        <span className="tt-style tt-u">U</span>
+                        <span className="tt-sep" />
+                        <span className="tt-chip" />
+                        <span className="tt-chip" />
+                      </div>
+                      <div className="text-page">
+                        <div className="tp-line w90" />
+                        <div className="tp-line w75" />
+                        <div className="tp-line w82" />
+                        <div className="tp-line w40" />
+                        <div className="tp-line w0" />
+                        <div className="tp-line w68" />
+                        <div className="tp-line w55" />
+                      </div>
+                    </div>
+                  </div>
+                  )}
+
+                  {/* Floating draggable note — always-on-top demo */}
+                  {kaosOpen && (
+                  <div
+                    ref={ldNoteRef}
+                    className={[
+                      'ld-note',
+                      kaosPinned ? 'kaos-pinned' : 'kaos-unpinned',
+                      kaosMinimized ? 'kaos-minimized' : '',
+                      kaosExpanded ? 'kaos-expanded' : '',
+                      ACCENTS[kaosAccent],
+                    ].filter(Boolean).join(' ')}
+                    style={{ left: 'calc(50% - 180px)', top: '12%' }}
+                  >
+                    <KaosWin
+                      title="kaos-notes.md"
+                      heading="Keep your kaos on top."
+                      pinned={kaosPinned}
+                      privacy={kaosPrivacy}
+                      searchOpen={kaosSearch}
+                      onClose={() => setKaosOpen(false)}
+                      onMinimize={() => setKaosMinimized(true)}
+                      onExpand={() => setKaosExpanded(v => !v)}
+                      onSearch={() => setKaosSearch(v => !v)}
+                      onSearchClose={() => setKaosSearch(false)}
+                      onGear={() => setKaosAccent(a => (a + 1) % ACCENTS.length)}
+                      onToggle={() => setKaosPinned(v => !v)}
+                      onEye={() => setKaosPrivacy(v => !v)}
+                      barHandlers={kaosHandlers}
+                    >
                       <p className="kw-p">Notes that <b>float above every window</b> on your Mac — right where you left them. Catch the thought, then get back to work.<span className="kw-cursor"></span></p>
                     </KaosWin>
                   </div>
+                  )}
 
                   {/* Dock */}
                   <div className="dock">
-                    <span className="dock-app" style={{ '--c': '#16c172' } as React.CSSProperties}></span>
-                    <span className="dock-app" style={{ '--c': '#5ac8fa' } as React.CSSProperties}></span>
-                    <span className="dock-app" style={{ '--c': '#ff9f0a' } as React.CSSProperties}></span>
-                    <span className="dock-app" style={{ '--c': '#ff375f' } as React.CSSProperties}></span>
-                    <span className="dock-app" style={{ '--c': '#bf5af2' } as React.CSSProperties}></span>
+                    {/* Finder */}
+                    <div className="demo-dock-item" title="Finder" onClick={() => toggleApp('finder')}>
+                      <div className="demo-squircle" style={{ background: 'linear-gradient(160deg, #2577e3, #1a5bbf)' }}>
+                        <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
+                          <rect x="21" y="0" width="21" height="42" fill="rgba(255,255,255,0.18)"/>
+                          <circle cx="15.5" cy="19" r="4.8" fill="white"/>
+                          <circle cx="17" cy="20.5" r="1.9" fill="#1a4fa0"/>
+                          <circle cx="26.5" cy="19" r="4.8" fill="white"/>
+                          <circle cx="28" cy="20.5" r="1.9" fill="#1a4fa0"/>
+                          <path d="M13.5 27.5 Q21 33 28.5 27.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
+                        </svg>
+                      </div>
+                      {openApps.has('finder') && <span className="demo-dock-dot" />}
+                    </div>
+
+                    {/* Safari */}
+                    <div className="demo-dock-item" title="Safari" onClick={() => toggleApp('safari')}>
+                      <div className="demo-squircle" style={{ background: 'linear-gradient(160deg, #5ac8fa, #0a84ff)' }}>
+                        <Compass size={22} color="white" strokeWidth={1.8} />
+                      </div>
+                      {openApps.has('safari') && <span className="demo-dock-dot" />}
+                    </div>
+
+                    {/* TextEdit */}
+                    <div className="demo-dock-item" title="TextEdit" onClick={() => toggleApp('textedit')}>
+                      <div className="demo-squircle" style={{ background: 'linear-gradient(160deg, #f2f2f7, #d1d1d6)' }}>
+                        <FileText size={22} color="#1d1d1f" strokeWidth={1.8} />
+                      </div>
+                      {openApps.has('textedit') && <span className="demo-dock-dot" />}
+                    </div>
+
+                    {/* Mail */}
+                    <div className="demo-dock-item" title="Mail" onClick={() => toggleApp('mail')}>
+                      <div className="demo-squircle" style={{ background: 'linear-gradient(160deg, #4db8ff, #006ee6)' }}>
+                        <MailIcon size={21} color="white" strokeWidth={1.8} />
+                      </div>
+                      {openApps.has('mail') && <span className="demo-dock-dot" />}
+                    </div>
+
+                    {/* Music */}
+                    <div className="demo-dock-item" title="Music" onClick={() => toggleApp('music')}>
+                      <div className="demo-squircle" style={{ background: 'linear-gradient(160deg, #ff6b8a, #fc2d55)' }}>
+                        <MusicIcon size={21} color="white" strokeWidth={1.8} />
+                      </div>
+                      {openApps.has('music') && <span className="demo-dock-dot" />}
+                    </div>
+
                     <span className="dock-sep"></span>
-                    <span className="dock-app" style={{ '--c': '#8e8e93' } as React.CSSProperties}></span>
+
+                    {/* Kaos Notes */}
+                    <div className="demo-dock-item" title="Kaos Notes" onClick={onKaosDockClick}>
+                      <div className="demo-squircle">
+                        <img src="/app_icon.png" alt="Kaos Notes" />
+                      </div>
+                      {kaosOpen && <span className="demo-dock-dot" />}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -485,34 +631,6 @@ function App() {
         </div>
       </section>
 
-      {/* SHOWCASE */}
-      <section className="section alt" id="showcase">
-        <div className="wrap">
-          <div className="reveal center" style={{ maxWidth: 620, margin: '0 auto 48px' }}>
-            <p className="eyebrow" style={{ marginLeft: 'auto', marginRight: 'auto' }}>See it in action</p>
-            <h2 className="section-title">It just feels like Mac.</h2>
-            <p className="section-sub">Native, fast, and right at home in your menu bar.</p>
-          </div>
-          <div className="showcase-frame reveal">
-            <div className="image-placeholder" style={{ aspectRatio: '16/9' }}>
-              Product screenshot — notes floating on a desktop
-            </div>
-          </div>
-          <div className="bento reveal" style={{ marginTop: 20 }}>
-            <div className="showcase-frame" style={{ gridColumn: 'span 3' }}>
-              <div className="image-placeholder" style={{ aspectRatio: '4/3' }}>
-                Close-up: a single note + markdown
-              </div>
-            </div>
-            <div className="showcase-frame" style={{ gridColumn: 'span 3' }}>
-              <div className="image-placeholder" style={{ aspectRatio: '4/3' }}>
-                The menu bar + hotkey moment
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* HOW IT WORKS */}
       <section className="section" id="how">
         <div className="wrap">
@@ -540,89 +658,7 @@ function App() {
         </div>
       </section>
 
-      {/* TRY IT */}
-      <section className="section alt" id="try">
-        <div className="wrap">
-          <div className="reveal" style={{ maxWidth: 640, marginBottom: 46 }}>
-            <p className="eyebrow">Try it — right here</p>
-            <h2 className="section-title">Drop a note. Drag it anywhere.</h2>
-            <p className="section-sub">A little playground that works just like the real thing. Hit the shortcut to float a fresh note in, type into it, then drag it around by its title bar.</p>
-          </div>
-          <div className="sandbox reveal" id="kaos-stage">
-            <div className="stage-top">
-              <img src="/app_icon.png" alt="" />
-              <strong>Kaos&nbsp;Notes</strong>
-              <span className="mb">File</span>
-              <span className="mb">Edit</span>
-              <span className="mb">Note</span>
-              <span className="stage-top-right">Playground · drag, type, close</span>
-            </div>
-            <div className="stage-surface" id="kaos-surface" ref={tryItSurfaceRef}>
-              <div className="stage-hint" id="stage-hint" ref={tryItHintRef}>
-                <div className="hint-keys">
-                  <span className="kbd-key big">⌃</span>
-                  <span className="kbd-key big">⇧</span>
-                  <span className="kbd-key big">N</span>
-                </div>
-                <p className="hint-lead">Press the shortcut to drop a note</p>
-                <button className="hint-tap" id="hint-tap" type="button">or tap to try it</button>
-              </div>
-            </div>
-            <button className="stage-spawn" id="stage-spawn" type="button">
-              <span className="plus">+</span> New note
-              <span className="spawn-keys"><span>⌃</span><span>⇧</span><span>N</span></span>
-            </button>
-          </div>
-        </div>
-      </section>
 
-      {/* PRICING */}
-      <section className="section alt" id="pricing">
-        <div className="wrap">
-          <div className="reveal center" style={{ maxWidth: 620, margin: '0 auto 52px' }}>
-            <p className="eyebrow" style={{ marginLeft: 'auto', marginRight: 'auto' }}>Pricing</p>
-            <h2 className="section-title">Free to start. Yours to keep.</h2>
-            <p className="section-sub">Join the waitlist now — early access is free while we're in beta.</p>
-          </div>
-          <div className="pricing">
-            <div className="price reveal">
-              <div className="p-name">Free</div>
-              <div className="amount">$0</div>
-              <p className="p-desc">Everything you need to capture a thought.</p>
-              <ul>
-                <li>{CHECK_SVG}Unlimited notes</li>
-                <li>{CHECK_SVG}Markdown editor</li>
-                <li>{CHECK_SVG}Always on top</li>
-              </ul>
-              <a href="#waitlist" className="btn btn-ghost">Join the waitlist</a>
-            </div>
-            <div className="price feature reveal">
-              <span className="badge-pop">Most popular</span>
-              <div className="p-name">Pro</div>
-              <div className="amount">$4<small>/mo</small></div>
-              <p className="p-desc">For people who live in their notes.</p>
-              <ul>
-                <li>{CHECK_SVG}Everything in Free</li>
-                <li>{CHECK_SVG}Hide from screen recording</li>
-                <li>{CHECK_SVG}Global hotkeys &amp; themes</li>
-                <li>{CHECK_SVG}iCloud sync</li>
-              </ul>
-              <a href="#waitlist" className="btn btn-primary">Join the waitlist</a>
-            </div>
-            <div className="price reveal">
-              <div className="p-name">Lifetime</div>
-              <div className="amount">$79<small> once</small></div>
-              <p className="p-desc">Pay once. Pro forever, every update.</p>
-              <ul>
-                <li>{CHECK_SVG}Everything in Pro</li>
-                <li>{CHECK_SVG}All future updates</li>
-                <li>{CHECK_SVG}Founder's badge</li>
-              </ul>
-              <a href="#waitlist" className="btn btn-ghost">Join the waitlist</a>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* FAQ */}
       <section className="section" id="faq">
@@ -676,7 +712,6 @@ function App() {
                 <h5>Product</h5>
                 <a href="#features">Features</a>
                 <a href="#how">How it works</a>
-                <a href="#pricing">Pricing</a>
                 <a href="#faq">FAQ</a>
               </div>
               <div className="col">
@@ -705,7 +740,6 @@ function App() {
         <nav className="fn-links">
           <a href="#features">Features</a>
           <a href="#how">How&nbsp;it&nbsp;works</a>
-          <a href="#pricing">Pricing</a>
           <a href="#faq">FAQ</a>
         </nav>
         <a href="#waitlist" className="btn btn-primary fn-cta">Join the waitlist</a>

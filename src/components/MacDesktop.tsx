@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import '../styles/macbook.css';
 import { NotesHeroMockup } from './NotesHeroMockup';
 import { Battery, Wifi, Bluetooth, Search, SlidersHorizontal, Compass, Code, Settings } from 'lucide-react';
 
@@ -7,13 +8,6 @@ export const MacDesktop: React.FC = () => {
 
   return (
     <div className="macbook-device-wrapper">
-      {/* Physical Macbook Bezel & Body Frame */}
-      <div className="macbook-bezel">
-        {/* Camera Notch */}
-        <div className="macbook-camera-notch">
-          <div className="camera-lens"></div>
-        </div>
-
         {/* The Screen / Desktop Container */}
         <div className="mac-desktop light-desktop accent-coral" ref={desktopRef}>
           {/* Sleek Top Menu Bar */}
@@ -85,15 +79,6 @@ export const MacDesktop: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* MacBook bottom bezel bar with subtle logo text */}
-        <div className="macbook-bottom-bezel">
-          <span className="macbook-logo-text">MacBook Pro</span>
-        </div>
-      </div>
-
-      {/* Macbook aluminum bottom keyboard hinge base */}
-      <div className="macbook-hinge-base"></div>
     </div>
   );
 };
