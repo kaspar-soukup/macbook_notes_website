@@ -82,19 +82,19 @@ const ACCENTS = ['', 'acc-blue', 'acc-violet', 'acc-green'];
 
 const SEARCH_SVG = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" strokeLinecap="round"/>
+    <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" strokeLinecap="round" />
   </svg>
 );
 const GEAR_SVG = (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-    <circle cx="12" cy="12" r="3"/>
-    <path d="M12 4v2M12 18v2M4 12h2M18 12h2M6.3 6.3l1.4 1.4M16.3 16.3l1.4 1.4M17.7 6.3l-1.4 1.4M7.7 16.3l-1.4 1.4"/>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 4v2M12 18v2M4 12h2M18 12h2M6.3 6.3l1.4 1.4M16.3 16.3l1.4 1.4M17.7 6.3l-1.4 1.4M7.7 16.3l-1.4 1.4" />
   </svg>
 );
 const EYE_SVG = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
-    <circle cx="12" cy="12" r="2.6"/>
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+    <circle cx="12" cy="12" r="2.6" />
   </svg>
 );
 interface KaosWinProps {
@@ -189,7 +189,7 @@ function makeDragHandlers(
     dragRef.current.dragging = false;
     const win = e.currentTarget.closest(parentSelector) as HTMLElement | null;
     win?.classList.remove('dragging');
-    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) { }
     if (wasDragging && win && opts.onDragEnd) {
       opts.onDragEnd(win.offsetLeft, win.offsetTop);
     }
@@ -361,7 +361,7 @@ function App() {
         <div className="wrap">
           <div className="reveal center" style={{ maxWidth: 760, margin: '0 auto 40px' }}>
             <h1 className="section-title hero-demo-h1">Notes wherever you need them.</h1>
-            <p className="section-sub hero-demo-sub">Always on top · Keyboard-first · Markdown editor · Hidden from screen recordings</p>
+            <p className="section-sub hero-demo-sub">Always on top, keyboard-first, local markdown editor, hidden from screen recordings.</p>
             <div style={{ marginTop: 28 }}>
               <button onClick={handleDownloadStart} className="btn btn-primary" style={{ height: 'auto', padding: '12px 36px', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2, borderRadius: 28 }}>
                 <span style={{ fontWeight: 700, fontSize: 16.5, letterSpacing: '-0.01em' }}>Download for macOS</span>
@@ -395,179 +395,179 @@ function App() {
                 <div className="ld-surface" id="ld-surface" ref={ldSurfaceRef}>
                   {/* Background windows */}
                   {openApps.has('mail') && (
-                  <div className={`app-win awin-mail${fullscreenApp === 'mail' ? ' fullscreen' : ''}`} style={fullscreenApp === 'mail' ? {} : { left: mailPos.left, top: mailPos.top, width: 540, zIndex: 1 }}>
-                    <div className="aw-bar" {...mailHandlers}>
-                      <span className="aw-lights">
-                        <i className="clickable" onClick={() => closeApp('mail')}></i>
-                        <i></i>
-                        <i className="clickable" onClick={() => toggleFullscreen('mail')}></i>
-                      </span>
-                      <span className="aw-title">Mail — Inbox</span>
-                    </div>
-                    <div className="aw-body mailbody">
-                      <div className="mail-side">
-                        <span className="msr on"></span><span className="msr"></span><span className="msr"></span>
-                        <span className="msr"></span><span className="msr"></span>
+                    <div className={`app-win awin-mail${fullscreenApp === 'mail' ? ' fullscreen' : ''}`} style={fullscreenApp === 'mail' ? {} : { left: mailPos.left, top: mailPos.top, width: 540, zIndex: 1 }}>
+                      <div className="aw-bar" {...mailHandlers}>
+                        <span className="aw-lights">
+                          <i className="clickable" onClick={() => closeApp('mail')}></i>
+                          <i></i>
+                          <i className="clickable" onClick={() => toggleFullscreen('mail')}></i>
+                        </span>
+                        <span className="aw-title">Mail — Inbox</span>
                       </div>
-                      <div className="mail-main">
-                        <div className="mrow on"><span className="mav"></span><span className="ml"><b></b><i></i></span></div>
-                        <div className="mrow"><span className="mav"></span><span className="ml"><b></b><i></i></span></div>
-                        <div className="mrow"><span className="mav"></span><span className="ml"><b></b><i></i></span></div>
-                        <div className="mrow"><span className="mav"></span><span className="ml"><b></b><i></i></span></div>
+                      <div className="aw-body mailbody">
+                        <div className="mail-side">
+                          <span className="msr on"></span><span className="msr"></span><span className="msr"></span>
+                          <span className="msr"></span><span className="msr"></span>
+                        </div>
+                        <div className="mail-main">
+                          <div className="mrow on"><span className="mav"></span><span className="ml"><b></b><i></i></span></div>
+                          <div className="mrow"><span className="mav"></span><span className="ml"><b></b><i></i></span></div>
+                          <div className="mrow"><span className="mav"></span><span className="ml"><b></b><i></i></span></div>
+                          <div className="mrow"><span className="mav"></span><span className="ml"><b></b><i></i></span></div>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   )}
 
                   {openApps.has('music') && (
-                  <div className={`app-win awin-music${fullscreenApp === 'music' ? ' fullscreen' : ''}`} style={fullscreenApp === 'music' ? {} : { left: musicPos.left, top: musicPos.top, width: 344, zIndex: 2 }}>
-                    <div className="aw-bar" {...musicHandlers}>
-                      <span className="aw-lights">
-                        <i className="clickable" onClick={() => closeApp('music')}></i>
-                        <i></i>
-                        <i className="clickable" onClick={() => toggleFullscreen('music')}></i>
-                      </span>
-                      <span className="aw-title">Now Playing</span>
+                    <div className={`app-win awin-music${fullscreenApp === 'music' ? ' fullscreen' : ''}`} style={fullscreenApp === 'music' ? {} : { left: musicPos.left, top: musicPos.top, width: 344, zIndex: 2 }}>
+                      <div className="aw-bar" {...musicHandlers}>
+                        <span className="aw-lights">
+                          <i className="clickable" onClick={() => closeApp('music')}></i>
+                          <i></i>
+                          <i className="clickable" onClick={() => toggleFullscreen('music')}></i>
+                        </span>
+                        <span className="aw-title">Now Playing</span>
+                      </div>
+                      <div className="aw-body musicbody">
+                        <div className="album"></div>
+                        <div className="m-meta"><span className="mt1"></span><span className="mt2"></span></div>
+                        <div className="m-prog"><span></span></div>
+                        <div className="m-ctrl"><i></i><i className="big"></i><i></i></div>
+                      </div>
                     </div>
-                    <div className="aw-body musicbody">
-                      <div className="album"></div>
-                      <div className="m-meta"><span className="mt1"></span><span className="mt2"></span></div>
-                      <div className="m-prog"><span></span></div>
-                      <div className="m-ctrl"><i></i><i className="big"></i><i></i></div>
-                    </div>
-                  </div>
                   )}
 
                   {openApps.has('finder') && (
-                  <div className={`app-win awin-finder${fullscreenApp === 'finder' ? ' fullscreen' : ''}`} style={fullscreenApp === 'finder' ? {} : { left: finderPos.left, top: finderPos.top, width: 500, zIndex: 3 }}>
-                    <div className="aw-bar" {...finderHandlers}>
-                      <span className="aw-lights">
-                        <i className="clickable" onClick={() => closeApp('finder')}></i>
-                        <i></i>
-                        <i className="clickable" onClick={() => toggleFullscreen('finder')}></i>
-                      </span>
-                      <span className="aw-title">Finder — Documents</span>
-                    </div>
-                    <div className="aw-body finderbody">
-                      <div className="finder-side">
-                        <div className="fs-section">Favorites</div>
-                        <div className="fs-item on"><span className="fs-dot" style={{ background: '#5ac8fa' }} />Documents</div>
-                        <div className="fs-item"><span className="fs-dot" style={{ background: '#ffcc00' }} />Downloads</div>
-                        <div className="fs-item"><span className="fs-dot" style={{ background: '#ff9500' }} />Desktop</div>
-                        <div className="fs-item"><span className="fs-dot" style={{ background: '#af52de' }} />Pictures</div>
-                        <div className="fs-section">iCloud</div>
-                        <div className="fs-item"><span className="fs-dot" style={{ background: '#34c759' }} />Shared</div>
+                    <div className={`app-win awin-finder${fullscreenApp === 'finder' ? ' fullscreen' : ''}`} style={fullscreenApp === 'finder' ? {} : { left: finderPos.left, top: finderPos.top, width: 500, zIndex: 3 }}>
+                      <div className="aw-bar" {...finderHandlers}>
+                        <span className="aw-lights">
+                          <i className="clickable" onClick={() => closeApp('finder')}></i>
+                          <i></i>
+                          <i className="clickable" onClick={() => toggleFullscreen('finder')}></i>
+                        </span>
+                        <span className="aw-title">Finder — Documents</span>
                       </div>
-                      <div className="finder-main">
-                        <div className="finder-grid">
-                          {Array.from({ length: 8 }).map((_, i) => (
-                            <div key={i} className="finder-file">
-                              <div className="ff-thumb" />
-                              <div className="ff-label" />
-                            </div>
-                          ))}
+                      <div className="aw-body finderbody">
+                        <div className="finder-side">
+                          <div className="fs-section">Favorites</div>
+                          <div className="fs-item on"><span className="fs-dot" style={{ background: '#5ac8fa' }} />Documents</div>
+                          <div className="fs-item"><span className="fs-dot" style={{ background: '#ffcc00' }} />Downloads</div>
+                          <div className="fs-item"><span className="fs-dot" style={{ background: '#ff9500' }} />Desktop</div>
+                          <div className="fs-item"><span className="fs-dot" style={{ background: '#af52de' }} />Pictures</div>
+                          <div className="fs-section">iCloud</div>
+                          <div className="fs-item"><span className="fs-dot" style={{ background: '#34c759' }} />Shared</div>
+                        </div>
+                        <div className="finder-main">
+                          <div className="finder-grid">
+                            {Array.from({ length: 8 }).map((_, i) => (
+                              <div key={i} className="finder-file">
+                                <div className="ff-thumb" />
+                                <div className="ff-label" />
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
                   )}
 
                   {openApps.has('safari') && (
-                  <div className={`app-win awin-safari${fullscreenApp === 'safari' ? ' fullscreen' : ''}`} style={fullscreenApp === 'safari' ? {} : { left: safariPos.left, top: safariPos.top, width: 440, zIndex: 4 }}>
-                    <div className="aw-bar safari-bar" {...safariHandlers}>
-                      <span className="aw-lights">
-                        <i className="clickable" onClick={() => closeApp('safari')}></i>
-                        <i></i>
-                        <i className="clickable" onClick={() => toggleFullscreen('safari')}></i>
-                      </span>
-                      <div className="safari-nav">
-                        <ArrowLeft size={13} strokeWidth={2.2} color="#a1a1a6" />
-                        <ArrowRight size={13} strokeWidth={2.2} color="#d2d2d6" />
+                    <div className={`app-win awin-safari${fullscreenApp === 'safari' ? ' fullscreen' : ''}`} style={fullscreenApp === 'safari' ? {} : { left: safariPos.left, top: safariPos.top, width: 440, zIndex: 4 }}>
+                      <div className="aw-bar safari-bar" {...safariHandlers}>
+                        <span className="aw-lights">
+                          <i className="clickable" onClick={() => closeApp('safari')}></i>
+                          <i></i>
+                          <i className="clickable" onClick={() => toggleFullscreen('safari')}></i>
+                        </span>
+                        <div className="safari-nav">
+                          <ArrowLeft size={13} strokeWidth={2.2} color="#a1a1a6" />
+                          <ArrowRight size={13} strokeWidth={2.2} color="#d2d2d6" />
+                        </div>
+                        <div className="safari-url">
+                          <Lock size={10} strokeWidth={2.4} color="#86868b" />
+                          <span>kaosnotes.app</span>
+                        </div>
                       </div>
-                      <div className="safari-url">
-                        <Lock size={10} strokeWidth={2.4} color="#86868b" />
-                        <span>kaosnotes.app</span>
-                      </div>
-                    </div>
-                    <div className="aw-body safaribody">
-                      <div className="safari-page">
-                        <div className="sp-hero" />
-                        <div className="sp-line w70" />
-                        <div className="sp-line w50" />
-                        <div className="sp-grid">
-                          <div className="sp-card" />
-                          <div className="sp-card" />
-                          <div className="sp-card" />
+                      <div className="aw-body safaribody">
+                        <div className="safari-page">
+                          <div className="sp-hero" />
+                          <div className="sp-line w70" />
+                          <div className="sp-line w50" />
+                          <div className="sp-grid">
+                            <div className="sp-card" />
+                            <div className="sp-card" />
+                            <div className="sp-card" />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
                   )}
 
                   {openApps.has('textedit') && (
-                  <div className={`app-win awin-text${fullscreenApp === 'textedit' ? ' fullscreen' : ''}`} style={fullscreenApp === 'textedit' ? {} : { left: textPos.left, top: textPos.top, width: 420, zIndex: 5 }}>
-                    <div className="aw-bar" {...textHandlers}>
-                      <span className="aw-lights">
-                        <i className="clickable" onClick={() => closeApp('textedit')}></i>
-                        <i></i>
-                        <i className="clickable" onClick={() => toggleFullscreen('textedit')}></i>
-                      </span>
-                      <span className="aw-title">untitled.txt — TextEdit</span>
-                    </div>
-                    <div className="aw-body textbody">
-                      <div className="text-toolbar">
-                        <span className="tt-style">B</span>
-                        <span className="tt-style tt-i">I</span>
-                        <span className="tt-style tt-u">U</span>
-                        <span className="tt-sep" />
-                        <span className="tt-chip" />
-                        <span className="tt-chip" />
+                    <div className={`app-win awin-text${fullscreenApp === 'textedit' ? ' fullscreen' : ''}`} style={fullscreenApp === 'textedit' ? {} : { left: textPos.left, top: textPos.top, width: 420, zIndex: 5 }}>
+                      <div className="aw-bar" {...textHandlers}>
+                        <span className="aw-lights">
+                          <i className="clickable" onClick={() => closeApp('textedit')}></i>
+                          <i></i>
+                          <i className="clickable" onClick={() => toggleFullscreen('textedit')}></i>
+                        </span>
+                        <span className="aw-title">untitled.txt — TextEdit</span>
                       </div>
-                      <div className="text-page">
-                        <div className="tp-line w90" />
-                        <div className="tp-line w75" />
-                        <div className="tp-line w82" />
-                        <div className="tp-line w40" />
-                        <div className="tp-line w0" />
-                        <div className="tp-line w68" />
-                        <div className="tp-line w55" />
+                      <div className="aw-body textbody">
+                        <div className="text-toolbar">
+                          <span className="tt-style">B</span>
+                          <span className="tt-style tt-i">I</span>
+                          <span className="tt-style tt-u">U</span>
+                          <span className="tt-sep" />
+                          <span className="tt-chip" />
+                          <span className="tt-chip" />
+                        </div>
+                        <div className="text-page">
+                          <div className="tp-line w90" />
+                          <div className="tp-line w75" />
+                          <div className="tp-line w82" />
+                          <div className="tp-line w40" />
+                          <div className="tp-line w0" />
+                          <div className="tp-line w68" />
+                          <div className="tp-line w55" />
+                        </div>
                       </div>
                     </div>
-                  </div>
                   )}
 
                   {/* Floating draggable note — always-on-top demo */}
                   {kaosOpen && (
-                  <div
-                    ref={ldNoteRef}
-                    className={[
-                      'ld-note',
-                      kaosPinned ? 'kaos-pinned' : 'kaos-unpinned',
-                      kaosMinimized ? 'kaos-minimized' : '',
-                      kaosExpanded ? 'kaos-expanded' : '',
-                      ACCENTS[kaosAccent],
-                    ].filter(Boolean).join(' ')}
-                    style={{ left: 'calc(50% - 180px)', top: '12%' }}
-                  >
-                    <KaosWin
-                      title="kaos-notes.md"
-                      heading="Keep your kaos on top."
-                      pinned={kaosPinned}
-                      privacy={kaosPrivacy}
-                      searchOpen={kaosSearch}
-                      onClose={() => setKaosOpen(false)}
-                      onMinimize={() => setKaosMinimized(true)}
-                      onExpand={() => setKaosExpanded(v => !v)}
-                      onSearch={() => setKaosSearch(v => !v)}
-                      onSearchClose={() => setKaosSearch(false)}
-                      onGear={() => setKaosAccent(a => (a + 1) % ACCENTS.length)}
-                      onToggle={() => setKaosPinned(v => !v)}
-                      onEye={() => setKaosPrivacy(v => !v)}
-                      barHandlers={kaosHandlers}
+                    <div
+                      ref={ldNoteRef}
+                      className={[
+                        'ld-note',
+                        kaosPinned ? 'kaos-pinned' : 'kaos-unpinned',
+                        kaosMinimized ? 'kaos-minimized' : '',
+                        kaosExpanded ? 'kaos-expanded' : '',
+                        ACCENTS[kaosAccent],
+                      ].filter(Boolean).join(' ')}
+                      style={{ left: 'calc(50% - 180px)', top: '12%' }}
                     >
-                      <p className="kw-p">Notes that <b>float above every window</b> on your Mac — right where you left them. Catch the thought, then get back to work.<span className="kw-cursor"></span></p>
-                    </KaosWin>
-                  </div>
+                      <KaosWin
+                        title="kaos-notes.md"
+                        heading="Keep your kaos on top."
+                        pinned={kaosPinned}
+                        privacy={kaosPrivacy}
+                        searchOpen={kaosSearch}
+                        onClose={() => setKaosOpen(false)}
+                        onMinimize={() => setKaosMinimized(true)}
+                        onExpand={() => setKaosExpanded(v => !v)}
+                        onSearch={() => setKaosSearch(v => !v)}
+                        onSearchClose={() => setKaosSearch(false)}
+                        onGear={() => setKaosAccent(a => (a + 1) % ACCENTS.length)}
+                        onToggle={() => setKaosPinned(v => !v)}
+                        onEye={() => setKaosPrivacy(v => !v)}
+                        barHandlers={kaosHandlers}
+                      >
+                        <p className="kw-p">Notes that <b>float above every window</b> on your Mac — right where you left them. Catch the thought, then get back to work.<span className="kw-cursor"></span></p>
+                      </KaosWin>
+                    </div>
                   )}
 
                   {/* Dock */}
@@ -576,12 +576,12 @@ function App() {
                     <div className="demo-dock-item" title="Finder" onClick={() => toggleApp('finder')}>
                       <div className="demo-squircle" style={{ background: 'linear-gradient(160deg, #2577e3, #1a5bbf)' }}>
                         <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
-                          <rect x="21" y="0" width="21" height="42" fill="rgba(255,255,255,0.18)"/>
-                          <circle cx="15.5" cy="19" r="4.8" fill="white"/>
-                          <circle cx="17" cy="20.5" r="1.9" fill="#1a4fa0"/>
-                          <circle cx="26.5" cy="19" r="4.8" fill="white"/>
-                          <circle cx="28" cy="20.5" r="1.9" fill="#1a4fa0"/>
-                          <path d="M13.5 27.5 Q21 33 28.5 27.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
+                          <rect x="21" y="0" width="21" height="42" fill="rgba(255,255,255,0.18)" />
+                          <circle cx="15.5" cy="19" r="4.8" fill="white" />
+                          <circle cx="17" cy="20.5" r="1.9" fill="#1a4fa0" />
+                          <circle cx="26.5" cy="19" r="4.8" fill="white" />
+                          <circle cx="28" cy="20.5" r="1.9" fill="#1a4fa0" />
+                          <path d="M13.5 27.5 Q21 33 28.5 27.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" fill="none" />
                         </svg>
                       </div>
                       {openApps.has('finder') && <span className="demo-dock-dot" />}
@@ -648,7 +648,7 @@ function App() {
             <div className="card span4 reveal">
               <div className="feat-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 7v10M4 7l3.5 4L11 7v10M15 8v8M15 16l3 3 3-3M18 8v8"/>
+                  <path d="M4 7v10M4 7l3.5 4L11 7v10M15 8v8M15 16l3 3 3-3M18 8v8" />
                 </svg>
               </div>
               <h3>Write in Markdown. Read in style.</h3>
@@ -667,7 +667,7 @@ function App() {
             <div className="card span2 reveal">
               <div className="feat-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 3v9M12 3l-3 3M12 3l3 3M5 21h14M5 16l7 5 7-5"/>
+                  <path d="M12 3v9M12 3l-3 3M12 3l3 3M5 21h14M5 16l7 5 7-5" />
                 </svg>
               </div>
               <h3>Always on top</h3>
@@ -677,9 +677,9 @@ function App() {
             <div className="card span2 reveal">
               <div className="feat-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2 12s3.5-7 10-7c2 0 3.7.6 5.1 1.5M22 12s-3.5 7-10 7c-2 0-3.8-.6-5.2-1.6"/>
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M3 3l18 18"/>
+                  <path d="M2 12s3.5-7 10-7c2 0 3.7.6 5.1 1.5M22 12s-3.5 7-10 7c-2 0-3.8-.6-5.2-1.6" />
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M3 3l18 18" />
                 </svg>
               </div>
               <h3>Invisible on share</h3>
@@ -690,8 +690,8 @@ function App() {
               <div style={{ flex: 1, minWidth: 220 }}>
                 <div className="feat-icon">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="6" width="20" height="12" rx="2"/>
-                    <path d="M6 10h0M10 10h0M14 10h0M18 10h0M6 14h12"/>
+                    <rect x="2" y="6" width="20" height="12" rx="2" />
+                    <path d="M6 10h0M10 10h0M14 10h0M18 10h0M6 14h12" />
                   </svg>
                 </div>
                 <h3>A note in a keystroke</h3>
@@ -719,14 +719,14 @@ function App() {
             <div className="shortcut-toggle-container">
               <span className="toggle-label">Keyboard Legend</span>
               <div className="toggle-switch-group">
-                <button 
-                  className={`toggle-switch-btn ${!showSymbols ? 'active' : ''}`} 
+                <button
+                  className={`toggle-switch-btn ${!showSymbols ? 'active' : ''}`}
                   onClick={() => setShowSymbols(false)}
                 >
                   Keys
                 </button>
-                <button 
-                  className={`toggle-switch-btn ${showSymbols ? 'active' : ''}`} 
+                <button
+                  className={`toggle-switch-btn ${showSymbols ? 'active' : ''}`}
                   onClick={() => setShowSymbols(true)}
                 >
                   Symbols
@@ -734,7 +734,7 @@ function App() {
               </div>
             </div>
           </div>
-          
+
           <div className="shortcuts-grid">
             {SHORTCUTS.map((shortcut) => {
               const IconComponent = shortcut.icon;
@@ -879,7 +879,7 @@ function App() {
         <div className="dl-modal-overlay" onClick={() => setShowDownloadModal(false)}>
           <div className="dl-modal" onClick={e => e.stopPropagation()}>
             <button className="dl-modal-close" aria-label="Close modal" onClick={() => setShowDownloadModal(false)}>×</button>
-            
+
             <div className="dl-icon-container">
               <div className="dl-icon-pulse" />
               <img src="/app_icon.png" alt="Kaos Notes" />
