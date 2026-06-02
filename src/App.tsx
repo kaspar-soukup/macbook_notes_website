@@ -1,80 +1,46 @@
 import { useEffect, useRef, useState } from 'react';
-import { Battery, Volume2, Compass, Mail as MailIcon, Music as MusicIcon, Pin, Shield, FileText, ArrowLeft, ArrowRight, Lock, Globe, Plus, PanelLeft, Search, EyeOff, Keyboard, ArrowLeftToLine, ArrowRightToLine, Minimize2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Battery, Volume2, Compass, Mail as MailIcon, Music as MusicIcon, Pin, Shield, FileText, ArrowLeft, ArrowRight, Lock, Globe, Plus, Search, EyeOff, Settings, HardDrive, Layers } from 'lucide-react';
+import PrivacySlider from './components/PrivacySlider';
 import './styles/kaos.css';
+
+const FEATURE_REQUEST_ENDPOINT = ''; // drop a Formspree/email-collection endpoint here; falls back to mailto when empty
+const FEATURE_REQUEST_MAILTO = 'hello@kaosnotes.app';
+
 
 const SHORTCUTS = [
   {
     id: 'global_toggle',
-    title: 'Global Summon / Hide',
-    description: 'Instantly slide the notes panel into focus or hide it from any app.',
+    title: 'Summon',
+    description: 'Slide a note into focus from any app, instantly.',
     keys: ['Option', 'Shift', 'N'],
     symbols: ['⌥', '⇧', 'N'],
     icon: Globe
   },
   {
     id: 'create_note',
-    title: 'Create New Note',
-    description: 'Create a new blank note and immediately focus the editor.',
+    title: 'New note',
+    description: 'Open a fresh note and start typing — no menus.',
     keys: ['Cmd', 'N'],
     symbols: ['⌘', 'N'],
     icon: Plus
   },
   {
-    id: 'toggle_sidebar',
-    title: 'Toggle Sidebar Search',
-    description: 'Toggle the command palette search to browse or switch notes.',
-    keys: ['Cmd', '\\'],
-    symbols: ['⌘', '\\'],
-    icon: PanelLeft
-  },
-  {
-    id: 'search_in_note',
-    title: 'Find in Active Note',
-    description: 'Slide down the editor overlay to search and replace text.',
-    keys: ['Cmd', 'F'],
-    symbols: ['⌘', 'F'],
-    icon: Search
-  },
-  {
     id: 'toggle_screen_capture',
-    title: 'Screen Recording Shield',
-    description: 'Toggle privacy mode to hide notes from screenshots & video shares.',
+    title: 'Hide from recording',
+    description: 'Vanish from screen shares and screenshots in one tap.',
     keys: ['Cmd', 'Shift', 'H'],
     symbols: ['⌘', '⇧', 'H'],
     icon: EyeOff
   },
   {
-    id: 'open_settings',
-    title: 'Shortcut Settings',
-    description: 'Open the interactive preferences to rebind your shortcuts.',
-    keys: ['Cmd', ','],
-    symbols: ['⌘', ','],
-    icon: Keyboard
+    id: 'search_in_note',
+    title: 'Find',
+    description: 'Jump to any word in the active note without leaving the keyboard.',
+    keys: ['Cmd', 'F'],
+    symbols: ['⌘', 'F'],
+    icon: Search
   },
-  {
-    id: 'snap_left',
-    title: 'Snap Window Left',
-    description: 'Instantly snap the floating window to the left side of your screen.',
-    keys: ['Cmd', 'Ctrl', 'Left'],
-    symbols: ['⌘', '⌃', '←'],
-    icon: ArrowLeftToLine
-  },
-  {
-    id: 'snap_right',
-    title: 'Snap Window Right',
-    description: 'Instantly snap the floating window to the right side of your screen.',
-    keys: ['Cmd', 'Ctrl', 'Right'],
-    symbols: ['⌘', '⌃', '→'],
-    icon: ArrowRightToLine
-  },
-  {
-    id: 'resize_small',
-    title: 'Reset Window Size',
-    description: 'Reset the window to its default compact layout (400x400px).',
-    keys: ['Cmd', 'Ctrl', '-'],
-    symbols: ['⌘', '⌃', '-'],
-    icon: Minimize2
-  }
 ];
 
 
@@ -85,21 +51,24 @@ const SEARCH_SVG = (
     <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" strokeLinecap="round" />
   </svg>
 );
-const GEAR_SVG = (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M12 4v2M12 18v2M4 12h2M18 12h2M6.3 6.3l1.4 1.4M16.3 16.3l1.4 1.4M17.7 6.3l-1.4 1.4M7.7 16.3l-1.4 1.4" />
-  </svg>
-);
+const GEAR_SVG = <Settings size={15} strokeWidth={1.8} />;
 const EYE_SVG = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
     <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
     <circle cx="12" cy="12" r="2.6" />
+  </svg>
+);
+const DOTS_SVG = (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+    <circle cx="4" cy="3" r="1.2" /><circle cx="10" cy="3" r="1.2" />
+    <circle cx="4" cy="7" r="1.2" /><circle cx="10" cy="7" r="1.2" />
+    <circle cx="4" cy="11" r="1.2" /><circle cx="10" cy="11" r="1.2" />
   </svg>
 );
 interface KaosWinProps {
   title: string;
   heading?: string;
+  headingCursor?: boolean;
   children: React.ReactNode;
   toolbar?: boolean;
   onClose?: () => void;
@@ -117,7 +86,7 @@ interface KaosWinProps {
 }
 
 function KaosWin({
-  title, heading, children, toolbar = true,
+  title, heading, headingCursor, children, toolbar = true,
   onClose, onMinimize, onExpand, onSearch, onGear, onToggle, onEye,
   pinned, privacy, searchOpen, onSearchClose, barHandlers,
 }: KaosWinProps) {
@@ -144,9 +113,7 @@ function KaosWin({
           </span>
         )}
         <span className="kw-title">{title}</span>
-        {onSearch && (
-          <span className="kw-gear" onClick={onSearch}>{SEARCH_SVG}</span>
-        )}
+        <span className="kw-gear" onClick={onGear}>{GEAR_SVG}</span>
       </div>
       {searchOpen && (
         <div className="kw-search">
@@ -156,15 +123,20 @@ function KaosWin({
         </div>
       )}
       <div className="kw-body">
-        {heading && <div className="kw-h">{heading}</div>}
+        {heading && <div className="kw-h">{heading}{headingCursor && <span className="kw-cursor kw-cursor-h"></span>}</div>}
         {children}
       </div>
       {toolbar && (
         <div className="kw-toolbar">
-          {onGear && <span className="kw-tool-gear" onClick={onGear}>{GEAR_SVG}</span>}
-          <span className="kw-keys"><span className="k">⌃</span><span className="k">⇧</span><span className="k">N</span></span>
-          {onToggle && <span className={`kw-act${pinned ? ' active' : ''}`} onClick={onToggle}>Toggle Window</span>}
-          {onEye && <span className="kw-right" onClick={onEye}>{EYE_SVG}</span>}
+          <span className="kw-tool-search" onClick={onSearch}>{SEARCH_SVG}</span>
+          <span className="kw-keys">
+            <span className="k">⌥</span><span className="k">⇧</span><span className="k">N</span>
+          </span>
+          <span className={`kw-act${pinned ? ' active' : ''}`} onClick={onToggle}>Toggle Window</span>
+          <span className="kw-right">
+            <span className="kw-eye" onClick={onEye}>{EYE_SVG}</span>
+            <span className="kw-dots">{DOTS_SVG}</span>
+          </span>
         </div>
       )}
     </div>
@@ -229,15 +201,62 @@ function makeDragHandlers(
 }
 
 const FAQS = [
-  { q: 'When does Kaos Notes launch?', a: "We're in private beta now. Join the waitlist and you'll be among the first invited — and you'll get early access free." },
-  { q: 'Is it really hidden from screen recordings?', a: "Yes. Kaos Notes uses macOS window-sharing controls so your notes are excluded from screen recordings, screen shares, and screenshots — automatically, with nothing to toggle mid-call." },
-  { q: 'Does it sync across my Macs?', a: "Pro syncs your notes securely over iCloud, so a note you start on your laptop is waiting on your desktop. Free keeps everything local on one Mac." },
-  { q: 'Is it Mac only?', a: "For now, yes — Kaos Notes is built natively for macOS so it can float above other apps and feel instant. We're listening on iPhone and iPad." },
-  { q: 'Will the waitlist cost anything?', a: "Never. Joining is free, and beta access is free. When we launch, Free stays free forever and Pro is an optional upgrade." },
+  { q: 'Is Kaos Notes free?', a: "Yes. It's free during open beta, and the core app will stay free." },
+  { q: 'What platforms does it support?', a: "Mac only for now — Apple Silicon and Intel, macOS 12 or newer. iPad and iPhone are on the list." },
+  { q: 'Is it really hidden from screen recordings?', a: "Yes. Kaos Notes uses macOS's window-sharing exclusion so your notes are excluded from screen recordings, screen shares, and screenshots. It's on by default, and you can toggle it with ⌘⇧H." },
+  { q: 'Where are my notes stored?', a: "Locally on your Mac, as plain Markdown files. No cloud, no account, no telemetry." },
+  { q: "It's in beta — is it stable?", a: "Open beta means it's usable every day, but rough edges exist. We ship updates weekly — if something breaks, drop a note in the feature-request box above." },
 ];
+
+type TodoNode = { id: string; label: string; children?: TodoNode[] };
+
+const TODO_TREE: TodoNode[] = [
+  {
+    id: 'root',
+    label: 'Try Kaos Notes',
+    children: [
+      { id: 'visit', label: 'Visit the website' },
+      { id: 'download', label: 'Download the macOS beta' },
+      { id: 'summon', label: 'Summon a note with ⌥⇧N' },
+      { id: 'float-hide', label: 'Hide from screen recordings' },
+      { id: 'markdown', label: 'Write a quick note in Markdown' },
+    ],
+  },
+];
+
+const INITIAL_DONE = new Set<string>(['visit']);
+
+function TodoList({
+  nodes,
+  done,
+  onToggle,
+}: { nodes: TodoNode[]; done: Set<string>; onToggle: (id: string) => void }) {
+  return (
+    <ul className="kw-todo">
+      {nodes.map(node => {
+        const isDone = done.has(node.id);
+        return (
+          <li key={node.id} className={isDone ? 'done' : ''}>
+            <span className="chk" onClick={() => onToggle(node.id)} role="checkbox" aria-checked={isDone} tabIndex={0} />
+            <span className="lbl">{node.label}</span>
+            {node.children && <TodoList nodes={node.children} done={done} onToggle={onToggle} />}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 function App() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [todoDone, setTodoDone] = useState<Set<string>>(INITIAL_DONE);
+  const toggleTodo = (id: string) => {
+    setTodoDone(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
   const [openApps, setOpenApps] = useState<Set<string>>(new Set(['safari', 'textedit']));
   const [fullscreenApp, setFullscreenApp] = useState<string | null>(null);
   const [showSymbols, setShowSymbols] = useState(true);
@@ -246,6 +265,43 @@ function App() {
   const [downloadEmail, setDownloadEmail] = useState('');
   const [downloadEmailSubmitted, setDownloadEmailSubmitted] = useState(false);
   const [navMenuOpen, setNavMenuOpen] = useState(false);
+
+  const [featureRequest, setFeatureRequest] = useState('');
+  const [featureRequestEmail, setFeatureRequestEmail] = useState('');
+  const [featureRequestSent, setFeatureRequestSent] = useState(false);
+  const [featureRequestError, setFeatureRequestError] = useState('');
+
+  const submitFeatureRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFeatureRequestError('');
+    const idea = featureRequest.trim();
+    const email = featureRequestEmail.trim();
+    if (idea.length < 4) {
+      setFeatureRequestError('Tell us a little more — at least a sentence.');
+      return;
+    }
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      setFeatureRequestError('That email doesn’t look right.');
+      return;
+    }
+    if (FEATURE_REQUEST_ENDPOINT) {
+      try {
+        await fetch(FEATURE_REQUEST_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ idea, email, source: 'kaosnotes.app' }),
+        });
+      } catch {
+        setFeatureRequestError('Could not send right now. Try again in a moment.');
+        return;
+      }
+    } else {
+      const subject = encodeURIComponent('Kaos Notes — feature request');
+      const body = encodeURIComponent(`${idea}\n\n— ${email || 'anonymous'}`);
+      window.location.href = `mailto:${FEATURE_REQUEST_MAILTO}?subject=${subject}&body=${body}`;
+    }
+    setFeatureRequestSent(true);
+  };
 
   const triggerDownload = () => {
     const link = document.createElement('a');
@@ -407,7 +463,6 @@ function App() {
                   <KaosWin
                     title="kaos-notes.md"
                     heading="Keep your notes on top."
-                    pinned
                     toolbar={false}
                   >
                     <p className="kw-p">Kaos Notes that <b>float above every window</b> on your Mac — right where you left them.<span className="kw-cursor"></span></p>
@@ -595,15 +650,14 @@ function App() {
                       style={{ left: 'calc(50% - 180px)', top: '12%' }}
                     >
                       <KaosWin
-                        title="kaos-notes.md"
-                        heading="Keep your notes on top."
-                        pinned={kaosPinned}
+                        title="ToDo"
+                        heading="ToDo"
+                        headingCursor
                         privacy={kaosPrivacy}
                         searchOpen={kaosSearch}
                         barHandlers={kaosHandlers}
-                        toolbar={false}
                       >
-                        <p className="kw-p">Kaos Notes that <b>float above every window</b> on your Mac — right where you left them. Catch the thought, then get back to work.<span className="kw-cursor"></span></p>
+                        <TodoList nodes={TODO_TREE} done={todoDone} onToggle={toggleTodo} />
                       </KaosWin>
                     </div>
                   )}
@@ -674,88 +728,125 @@ function App() {
         </div>
       </section>
 
-      {/* FEATURES */}
+      {/* FEATURES — Apple-style image-led bento */}
       <section className="section" id="features">
         <div className="wrap">
-          <div className="reveal" style={{ maxWidth: 620, marginBottom: 54 }}>
-            <p className="eyebrow">Built for the way you think</p>
-            <h2 className="section-title">Small app. Sharp details.</h2>
-            <p className="section-sub">Everything you'd expect from a thoughtful Mac app — and a few touches you didn't.</p>
+          <div className="reveal" style={{ maxWidth: 640, marginBottom: 64 }}>
+            <p className="eyebrow">What it does</p>
+            <h2 className="section-title">Built for fast, private thinking.</h2>
+            <p className="section-sub">A keyboard-first, local-first Markdown editor that floats over your work — and hides itself when you share your screen.</p>
           </div>
-          <div className="bento">
-            <div className="card span4 reveal">
-              <div className="feat-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 7v10M4 7l3.5 4L11 7v10M15 8v8M15 16l3 3 3-3M18 8v8" />
-                </svg>
+          <div className="bento bento-apple">
+            <div className="card span4 card-feature reveal">
+              <div className="card-copy">
+                <p className="eyebrow card-eyebrow">Keyboard-first</p>
+                <h3>Summon from anywhere.</h3>
+                <p className="card-sub">A single shortcut brings a note in. Another sends it away.</p>
               </div>
-              <h3>Write in Markdown. Read in style.</h3>
-              <p>Headings, checklists, bold and links — type it plain and Kaos renders it beautifully, live, as you go.</p>
-              <div style={{ marginTop: 26 }}>
-                <KaosWin title="groceries.md" heading="Groceries">
-                  <ul className="bullets">
-                    <li className="done">Oat milk</li>
-                    <li><b>Fresh basil</b> 🌱</li>
-                    <li><i>Good</i> olive oil<span className="kw-cursor"></span></li>
-                  </ul>
-                </KaosWin>
-              </div>
-            </div>
-
-            <div className="card span2 reveal">
-              <div className="feat-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 3v9M12 3l-3 3M12 3l3 3M5 21h14M5 16l7 5 7-5" />
-                </svg>
-              </div>
-              <h3>Always on top</h3>
-              <p>Pin a note above every window so it's there the second you need it — and gone when you don't.</p>
-            </div>
-
-            <div className="card span2 reveal">
-              <div className="feat-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2 12s3.5-7 10-7c2 0 3.7.6 5.1 1.5M22 12s-3.5 7-10 7c-2 0-3.8-.6-5.2-1.6" />
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M3 3l18 18" />
-                </svg>
-              </div>
-              <h3>Invisible on share</h3>
-              <p>Your notes disappear from screen recordings and shared screens. Private thoughts stay private.</p>
-            </div>
-
-            <div className="card span4 reveal" style={{ display: 'flex', alignItems: 'center', gap: 40, flexWrap: 'wrap' }}>
-              <div style={{ flex: 1, minWidth: 220 }}>
-                <div className="feat-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="6" width="20" height="12" rx="2" />
-                    <path d="M6 10h0M10 10h0M14 10h0M18 10h0M6 14h12" />
-                  </svg>
+              <div className="card-visual cv-summon">
+                <div className="cv-summon-stack" aria-hidden="true">
+                  <div className="cv-summon-dim" />
+                  <div className="cv-summon-note">
+                    <KaosWin title="quick.md" heading="Note this." toolbar={false}>
+                      <p className="kw-p">The thought arrives. <b>You catch it.</b><span className="kw-cursor" /></p>
+                    </KaosWin>
+                  </div>
+                  <div className="cv-summon-keys">
+                    <span className="kbd-key">⌥</span>
+                    <span className="kbd-key">⇧</span>
+                    <span className="kbd-key">N</span>
+                  </div>
                 </div>
-                <h3>A note in a keystroke</h3>
-                <p>Summon a fresh note from any app, instantly. Set the shortcut to whatever fits your hands.</p>
               </div>
-              <div className="kbd" style={{ marginTop: 0 }}>
-                <span className="kbd-key">⌃</span><span className="kbd-key">⇧</span><span className="kbd-key">N</span>
+            </div>
+
+            <div className="card span2 card-feature reveal">
+              <div className="card-copy">
+                <p className="eyebrow card-eyebrow">Local</p>
+                <h3>Lives on your Mac.</h3>
+                <p className="card-sub">Plain Markdown files. No cloud, no account.</p>
+              </div>
+              <div className="card-visual cv-local">
+                <div className="cv-folder" aria-hidden="true">
+                  <HardDrive size={20} strokeWidth={1.8} />
+                  <div className="cv-folder-files">
+                    <span className="cv-file"><FileText size={11} strokeWidth={2} /> meeting.md</span>
+                    <span className="cv-file"><FileText size={11} strokeWidth={2} /> ideas.md</span>
+                    <span className="cv-file"><FileText size={11} strokeWidth={2} /> todo.md</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="card span2 card-feature reveal">
+              <div className="card-copy">
+                <p className="eyebrow card-eyebrow">Markdown</p>
+                <h3>Plain in. Polished out.</h3>
+                <p className="card-sub">Type the syntax. Read the result.</p>
+              </div>
+              <div className="card-visual cv-markdown">
+                <div className="cv-md-split" aria-hidden="true">
+                  <div className="cv-md-raw">
+                    <span># Roadmap</span>
+                    <span>- **ship** privacy</span>
+                    <span>- *fix* shortcut</span>
+                  </div>
+                  <div className="cv-md-rendered">
+                    <div className="cv-md-h">Roadmap</div>
+                    <ul>
+                      <li><b>ship</b> privacy</li>
+                      <li><i>fix</i> shortcut</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="card span4 card-feature reveal">
+              <div className="card-copy">
+                <p className="eyebrow card-eyebrow">Always on top</p>
+                <h3>Floats over everything.</h3>
+                <p className="card-sub">Your note stays put while the rest of your screen moves around it.</p>
+              </div>
+              <div className="card-visual cv-onto">
+                <div className="cv-onto-stack" aria-hidden="true">
+                  <div className="cv-onto-win cv-onto-w1"><div className="cv-onto-bar"><span className="aw-lights"><i /><i /><i /></span></div></div>
+                  <div className="cv-onto-win cv-onto-w2"><div className="cv-onto-bar"><span className="aw-lights"><i /><i /><i /></span></div></div>
+                  <div className="cv-onto-win cv-onto-w3"><div className="cv-onto-bar"><span className="aw-lights"><i /><i /><i /></span></div></div>
+                  <div className="cv-onto-note">
+                    <KaosWin title="notes.md" heading="Always here." toolbar={false} pinned>
+                      <p className="kw-p">No matter what you open.</p>
+                    </KaosWin>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="card span6 card-feature card-privacy reveal" id="privacy">
+              <div className="card-copy">
+                <p className="eyebrow card-eyebrow">Privacy</p>
+                <h3>What they see. What you see.</h3>
+                <p className="card-sub">Kaos Notes hides itself from screen recordings, screenshots, and Zoom — automatically. Drag to compare.</p>
+              </div>
+              <div className="card-visual cv-privacy">
+                <PrivacySlider />
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SHORTCUTS */}
-      <section className="section alt" id="shortcuts">
+      {/* SHORTCUTS — simplified */}
+      <section className="section" id="shortcuts">
         <div className="wrap">
           <div className="reveal" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 32, flexWrap: 'wrap', marginBottom: 48 }}>
             <div style={{ maxWidth: 620 }}>
-              <p className="eyebrow">Keyboard-First Control</p>
-              <h2 className="section-title">Speed. Built in.</h2>
-              <p className="section-sub">
-                Summon the app, search notes, hide your screen, or snap windows instantly. Use symbols or switch to key names to learn the layouts.
-              </p>
+              <p className="eyebrow">Shortcuts</p>
+              <h2 className="section-title">The four you'll actually use.</h2>
+              <p className="section-sub">Everything else lives in the in-app settings.</p>
             </div>
             <div className="shortcut-toggle-container">
-              <span className="toggle-label">Keyboard Legend</span>
+              <span className="toggle-label">Show</span>
               <div className="toggle-switch-group">
                 <button
                   className={`toggle-switch-btn ${!showSymbols ? 'active' : ''}`}
@@ -773,7 +864,7 @@ function App() {
             </div>
           </div>
 
-          <div className="shortcuts-grid">
+          <div className="shortcuts-grid shortcuts-grid-four">
             {SHORTCUTS.map((shortcut) => {
               const IconComponent = shortcut.icon;
               return (
@@ -799,34 +890,55 @@ function App() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="section" id="how">
+      {/* FEATURE REQUESTS */}
+      <section className="section alt" id="requests">
         <div className="wrap">
-          <div className="reveal" style={{ maxWidth: 620, marginBottom: 56 }}>
-            <p className="eyebrow">How it works</p>
-            <h2 className="section-title">Three steps. No friction.</h2>
-          </div>
-          <div className="steps">
-            <div className="step reveal">
-              <div className="line"></div>
-              <h3>Hit the hotkey</h3>
-              <p>Press your shortcut from anywhere — a crisp new note floats in, focused and ready.</p>
+          <div className="fr-grid">
+            <div className="fr-copy reveal">
+              <p className="eyebrow">Open beta</p>
+              <h2 className="section-title">What should we build next?</h2>
+              <p className="section-sub">Kaos Notes is shaped by the people using it. Missing a shortcut, a layout, an export option? Tell us — we read every one.</p>
+              <div className="fr-meta">
+                <span className="fr-meta-pill"><Layers size={13} strokeWidth={2.2} /> Weekly updates</span>
+                <span className="fr-meta-pill"><Shield size={13} strokeWidth={2.2} /> Replies from the team</span>
+              </div>
             </div>
-            <div className="step reveal">
-              <div className="line"></div>
-              <h3>Jot it down</h3>
-              <p>Type in plain Markdown. Checklists, headings and emphasis render as you write.</p>
-            </div>
-            <div className="step reveal">
-              <div className="line"></div>
-              <h3>Let it float</h3>
-              <p>Pin it on top, tuck it on a Space, or let it hide itself. It's there when you come back.</p>
-            </div>
+            <form className="fr-form reveal" onSubmit={submitFeatureRequest}>
+              {featureRequestSent ? (
+                <div className="fr-success">
+                  <div className="fr-success-icon"><Pin size={18} strokeWidth={2.4} fill="currentColor" /></div>
+                  <h3>Got it. We'll take a look. ✦</h3>
+                  <p>Thanks for shaping the roadmap. If you left an email, we'll follow up when this lands.</p>
+                </div>
+              ) : (
+                <>
+                  <label className="fr-label" htmlFor="fr-idea">Your idea</label>
+                  <textarea
+                    id="fr-idea"
+                    className="fr-textarea"
+                    placeholder="A shortcut to send a note to the trash, a way to export to PDF…"
+                    value={featureRequest}
+                    onChange={e => setFeatureRequest(e.target.value)}
+                    rows={5}
+                    required
+                  />
+                  <label className="fr-label" htmlFor="fr-email">Email <span className="fr-label-opt">— optional, so we can follow up</span></label>
+                  <input
+                    id="fr-email"
+                    type="email"
+                    className="fr-input"
+                    placeholder="you@email.com"
+                    value={featureRequestEmail}
+                    onChange={e => setFeatureRequestEmail(e.target.value)}
+                  />
+                  {featureRequestError && <p className="fr-error">{featureRequestError}</p>}
+                  <button type="submit" className="btn btn-primary fr-submit">Send request</button>
+                </>
+              )}
+            </form>
           </div>
         </div>
       </section>
-
-
 
       {/* FAQ */}
       <section className="section" id="faq">
@@ -877,8 +989,9 @@ function App() {
               <div className="col">
                 <h5>Product</h5>
                 <a href="#features">Features</a>
+                <a href="#privacy">Privacy</a>
                 <a href="#shortcuts">Shortcuts</a>
-                <a href="#how">How it works</a>
+                <a href="#requests">Requests</a>
                 <a href="#faq">FAQ</a>
               </div>
               <div className="col">
@@ -889,8 +1002,9 @@ function App() {
               </div>
               <div className="col">
                 <h5>Legal</h5>
-                <a href="#">Privacy</a>
-                <a href="#">Terms</a>
+                <Link to="/privacy">Privacy</Link>
+                <Link to="/terms">Terms</Link>
+                <Link to="/imprint">Imprint</Link>
               </div>
             </div>
           </div>
@@ -906,8 +1020,9 @@ function App() {
         </a>
         <nav className="fn-links">
           <a href="#features" onClick={() => setNavMenuOpen(false)}>Features</a>
+          <a href="#privacy" onClick={() => setNavMenuOpen(false)}>Privacy</a>
           <a href="#shortcuts" onClick={() => setNavMenuOpen(false)}>Shortcuts</a>
-          <a href="#how" onClick={() => setNavMenuOpen(false)}>How&nbsp;it&nbsp;works</a>
+          <a href="#requests" onClick={() => setNavMenuOpen(false)}>Requests</a>
           <a href="#faq" onClick={() => setNavMenuOpen(false)}>FAQ</a>
         </nav>
         <button
