@@ -1,0 +1,524 @@
+/* MacBook Device Hardware Frame Wrapper */
+.macbook-device-wrapper {
+  width: 100%;
+  max-width: 1080px;
+  margin: 40px auto;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.18), 0 12px 24px rgba(0,0,0,0.10);
+}
+
+/* Macbook Bezel (anodized aluminum look) */
+.macbook-bezel {
+  background: #08080a;
+  padding: 18px 18px 0 18px;
+  border-radius: 20px 20px 0 0;
+  position: relative;
+  box-shadow: 0 45px 95px rgba(0, 0, 0, 0.16), 0 15px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  z-index: 10;
+}
+
+/* MacBook Camera Notch */
+.macbook-camera-notch {
+  width: 120px;
+  height: 18px;
+  background: #08080a;
+  border-radius: 0 0 10px 10px;
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-lens {
+  width: 5px;
+  height: 5px;
+  background: #0b1a2b;
+  border-radius: 50%;
+  box-shadow: inset 0 0 2px #047857;
+  opacity: 0.8;
+}
+
+/* MacBook Bottom Bezel */
+.macbook-bottom-bezel {
+  height: 28px;
+  background: #08080a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.macbook-logo-text {
+  color: #7d7d7d;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0.4px;
+}
+
+/* MacBook Silver Hinge & Bottom Case Wedge */
+.macbook-hinge-base {
+  height: 14px;
+  background: linear-gradient(to bottom, #d2d5d8 0%, #b2b5b9 40%, #7d8084 100%);
+  border-radius: 0 0 20px 20px;
+  border-top: 1px solid #63676c;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  position: relative;
+  z-index: 5;
+  margin-top: -1px;
+}
+
+/* Central Screen inside the Bezel */
+.mac-desktop.light-desktop {
+  position: relative;
+  width: 100%;
+  height: 580px;
+  background-image: url('/macos_wallpaper.png');
+  background-size: cover;
+  background-position: center;
+  border-radius: 0;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* Top Menubar inside the Desktop Screen */
+.mac-desktop.light-desktop .desktop-menubar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1d1d1f;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.mac-desktop.light-desktop .menubar-left, 
+.mac-desktop.light-desktop .menubar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mac-desktop.light-desktop .menubar-left .active {
+  font-weight: 700;
+}
+
+/* Draggable Light Sticky Note Windows */
+.mac-note-window {
+  position: absolute;
+  width: 320px;
+  background: var(--bg-card);
+  border-radius: 16px;
+  box-shadow: var(--shadow-window);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+  transition: box-shadow 0.2s, transform 0.05s ease-out;
+}
+
+.mac-note-window.dragging {
+  box-shadow: 0 35px 70px rgba(0, 0, 0, 0.12), 0 10px 25px rgba(0, 0, 0, 0.04);
+}
+
+.mac-note-window.focused-window {
+  border-color: rgba(255, 78, 46, 0.25);
+}
+
+/* Note window titlebar */
+.mac-note-window .window-titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 40px;
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.mac-note-window .window-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.mac-note-window .control {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.mac-note-window .dot-red { background: #ff5f56; }
+.mac-note-window .dot-yellow { background: #ffbd2e; }
+.mac-note-window .dot-green { background: #27c93f; }
+
+.mac-note-window .drag-handle {
+  flex-grow: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+}
+
+.mac-note-window.dragging .drag-handle {
+  cursor: grabbing;
+}
+
+.mac-note-window .window-title-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.mac-note-window .window-search-icon {
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+/* Note content area */
+.mac-note-window .window-content {
+  padding: 18px 20px;
+  flex-grow: 1;
+  text-align: left;
+}
+
+.note-section-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #1d1d1f;
+  letter-spacing: -0.5px;
+}
+
+/* Note bottom toolbar styling */
+.mac-note-window .window-bottombar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.01);
+  font-size: 11px;
+}
+
+.mac-note-window .bottombar-left, 
+.mac-note-window .bottombar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mac-note-window .btn-small {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+.mac-note-window .btn-text {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.mac-note-window .btn-icon {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.mac-note-window .btn-drag {
+  color: var(--text-muted);
+  letter-spacing: -1px;
+  font-weight: 700;
+}
+
+/* Checklist custom styling */
+.checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.checklist-item input {
+  display: none;
+}
+
+.checkbox-custom {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #e5e5ea;
+  display: inline-block;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.checklist-item.checked .checkbox-custom {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.checklist-item.checked .checkbox-custom::after {
+  content: '✓';
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.checklist-item.checked .item-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* Blinking cursor simulation */
+.blinking-cursor {
+  color: var(--accent-color);
+  font-weight: 300;
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  from, to { color: transparent }
+  50% { color: var(--accent-color) }
+}
+
+/* WYSIWYG note containers */
+.wysiwyg-container {
+  height: 100%;
+}
+
+.wysiwyg-container .milkdown-wrapper {
+  overflow-y: visible;
+}
+
+.wysiwyg-container .milkdown .editor {
+  padding: 0 !important;
+  font-size: 14px !important;
+}
+
+.wysiwyg-container .milkdown p {
+  color: var(--text-secondary);
+}
+
+/* Quick capture layout */
+.quick-capture-container {
+  text-align: center;
+  padding: 10px 0;
+}
+
+.shortcut-symbols {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.shortcut-symbols .sym {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1d1d1f;
+}
+
+.quick-capture-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.coral-cursor {
+  color: var(--accent-color);
+  animation: blink 1s step-end infinite;
+}
+
+/* macOS Elegant Glassmorphic Dock */
+.desktop-dock {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  z-index: 100;
+  transition: padding 0.2s;
+}
+
+.dock-item {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dock-item:hover {
+  transform: translateY(-8px) scale(1.15);
+}
+
+/* Squircle Base */
+.squircle-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+}
+
+/* Finder Spec */
+.finder-bg {
+  background: linear-gradient(135deg, #d3e5ff 0%, #a2c6ff 100%);
+  border-color: rgba(0, 122, 255, 0.1);
+}
+
+.finder-face {
+  font-size: 26px;
+  color: #007aff;
+  line-height: 1;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 500;
+}
+
+/* Safari Spec */
+.safari-bg {
+  background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%);
+  border-color: rgba(33, 150, 243, 0.15);
+}
+
+/* VS Code Spec */
+.vscode-bg {
+  background: #ffffff;
+  border-color: rgba(0, 102, 179, 0.1);
+}
+
+/* Kaos Notes dock icon */
+.kaos-notes-dock-icon {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.04);
+  padding: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Settings Spec */
+.settings-bg {
+  background: linear-gradient(135deg, #f5f5f7 0%, #e5e5ea 100%);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Running App Indicator Dot */
+.active-app {
+  padding-bottom: 5px;
+}
+
+.active-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #1d1d1f;
+  position: absolute;
+  bottom: -4px;
+  opacity: 0.7;
+}
+
+/* Keyboard HUD */
+.keyboard-hud {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.hud-shortcut {
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  color: var(--accent-color);
+}
+
+/* Responsive Scaling */
+@media (max-width: 1120px) {
+  .mac-desktop.light-desktop {
+    transform: scale(0.85);
+    transform-origin: top center;
+    height: 500px;
+  }
+}
+
+@media (max-width: 820px) {
+  .mac-desktop.light-desktop {
+    transform: scale(0.6);
+    height: 380px;
+  }
+  .hero-title {
+    font-size: 44px;
+    letter-spacing: -1.5px;
+  }
+  .site-header {
+    padding: 24px 32px;
+  }
+}
