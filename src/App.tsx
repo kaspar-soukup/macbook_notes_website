@@ -1,46 +1,48 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Battery, Volume2, Compass, Mail as MailIcon, Music as MusicIcon, Pin, Shield, FileText, ArrowLeft, ArrowRight, Lock, Globe, Plus, Search, EyeOff, Settings, HardDrive, Layers } from 'lucide-react';
+import { Battery, Volume2, Compass, Mail as MailIcon, Music as MusicIcon, Pin, Shield, FileText, ArrowLeft, ArrowRight, Lock, Settings, HardDrive, Layers } from 'lucide-react';
 import PrivacySlider from './components/PrivacySlider';
 import './styles/kaos.css';
 
-const FEATURE_REQUEST_ENDPOINT = ''; // drop a Formspree/email-collection endpoint here; falls back to mailto when empty
+const FEATURE_REQUEST_ENDPOINT = (import.meta.env.VITE_FORMSPREE_ENDPOINT as string | undefined) ?? '';
 const FEATURE_REQUEST_MAILTO = 'hello@kaosnotes.app';
 
+async function postToFormspree(payload: Record<string, unknown>): Promise<boolean> {
+  if (!FEATURE_REQUEST_ENDPOINT) return false;
+  try {
+    const res = await fetch(FEATURE_REQUEST_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
 
-const SHORTCUTS = [
-  {
-    id: 'global_toggle',
-    title: 'Summon',
-    description: 'Slide a note into focus from any app, instantly.',
-    keys: ['Option', 'Shift', 'N'],
-    symbols: ['⌥', '⇧', 'N'],
-    icon: Globe
-  },
-  {
-    id: 'create_note',
-    title: 'New note',
-    description: 'Open a fresh note and start typing — no menus.',
-    keys: ['Cmd', 'N'],
-    symbols: ['⌘', 'N'],
-    icon: Plus
-  },
-  {
-    id: 'toggle_screen_capture',
-    title: 'Hide from recording',
-    description: 'Vanish from screen shares and screenshots in one tap.',
-    keys: ['Cmd', 'Shift', 'H'],
-    symbols: ['⌘', '⇧', 'H'],
-    icon: EyeOff
-  },
-  {
-    id: 'search_in_note',
-    title: 'Find',
-    description: 'Jump to any word in the active note without leaving the keyboard.',
-    keys: ['Cmd', 'F'],
-    symbols: ['⌘', 'F'],
-    icon: Search
-  },
+
+
+const SHORTCUTS_ALL = [
+  { category: 'Global', rows: [
+    { action: 'Summon / dismiss', keys: ['⌥', '⇧', 'N'] },
+  ]},
+  { category: 'Notes', rows: [
+    { action: 'New note', keys: ['⌘', 'N'] },
+    { action: 'Search notes', keys: ['⌘', '\\'] },
+    { action: 'Find in note', keys: ['⌘', 'F'] },
+  ]},
+  { category: 'Window', rows: [
+    { action: 'Snap to left half', keys: ['⌘', '⌃', '←'] },
+    { action: 'Snap to right half', keys: ['⌘', '⌃', '→'] },
+    { action: 'Resize', keys: ['⌘', '⌃', '–'] },
+  ]},
+  { category: 'Privacy', rows: [
+    { action: 'Hide from recording', keys: ['⌘', '⇧', 'H'] },
+  ]},
+  { category: 'App', rows: [
+    { action: 'Settings', keys: ['⌘', ','] },
+  ]},
 ];
 
 
@@ -204,8 +206,8 @@ function makeDragHandlers(
 }
 
 const FAQS = [
-  { q: 'Is Kaos Notes free?', a: "Yes. It's free during open beta, and the core app will stay free." },
-  { q: 'What platforms does it support?', a: "Mac only for now — Apple Silicon and Intel, macOS 12 or newer. iPad and iPhone are on the list." },
+  { q: 'Is Kaos Notes free?', a: "Yes. Kaos Notes is free — no paid tiers, no subscription." },
+  { q: 'What platforms does it support?', a: "Mac only — Apple Silicon and Intel, macOS 12 or newer." },
   { q: 'Is it really hidden from screen recordings?', a: "Yes. Kaos Notes uses macOS's window-sharing exclusion so your notes are excluded from screen recordings, screen shares, and screenshots. It's on by default, and you can toggle it with ⌘⇧H." },
   { q: 'Where are my notes stored?', a: "Locally on your Mac, as plain Markdown files. No cloud, no account, no telemetry." },
   { q: "It's in beta — is it stable?", a: "Open beta means it's usable every day, but rough edges exist. We ship updates weekly — if something breaks, drop a note in the feature-request box above." },
@@ -262,11 +264,12 @@ function App() {
   };
   const [openApps, setOpenApps] = useState<Set<string>>(new Set(['safari', 'textedit']));
   const [fullscreenApp, setFullscreenApp] = useState<string | null>(null);
-  const [showSymbols, setShowSymbols] = useState(true);
+  const [navScrolled, setNavScrolled] = useState(false);
 
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [downloadEmail, setDownloadEmail] = useState('');
   const [downloadEmailSubmitted, setDownloadEmailSubmitted] = useState(false);
+  const [downloadEmailError, setDownloadEmailError] = useState('');
   const [navMenuOpen, setNavMenuOpen] = useState(false);
 
   const [featureRequest, setFeatureRequest] = useState('');
@@ -288,13 +291,8 @@ function App() {
       return;
     }
     if (FEATURE_REQUEST_ENDPOINT) {
-      try {
-        await fetch(FEATURE_REQUEST_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ idea, email, source: 'kaosnotes.app' }),
-        });
-      } catch {
+      const ok = await postToFormspree({ idea, email, source: 'feature-request', _subject: 'Kaos Notes — feature request' });
+      if (!ok) {
         setFeatureRequestError('Could not send right now. Try again in a moment.');
         return;
       }
@@ -306,20 +304,22 @@ function App() {
     setFeatureRequestSent(true);
   };
 
-  const triggerDownload = () => {
+  const triggerDownload = (source: string) => {
+    // Navigate to the tracked endpoint; it logs the click and 302s to the DMG.
+    // Uses a hidden anchor so the main page stays put while Safari/Chrome handle the download.
     const link = document.createElement('a');
-    link.href = '/downloads/KaosNotes-beta.dmg';
-    link.download = 'KaosNotes-beta.dmg';
+    link.href = `/api/download?source=${encodeURIComponent(source)}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const handleDownloadStart = () => {
-    triggerDownload();
+  const handleDownloadStart = (source: string) => {
+    triggerDownload(source);
     setShowDownloadModal(true);
     setDownloadEmail('');
     setDownloadEmailSubmitted(false);
+    setDownloadEmailError('');
   };
 
   // Persisted positions (so drag survives fullscreen toggle)
@@ -413,6 +413,13 @@ function App() {
     return () => io.disconnect();
   }, []);
 
+  // Nav scroll fade
+  useEffect(() => {
+    const onScroll = () => setNavScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
 
   function toggleFaq(idx: number) {
     setFaqOpen(prev => prev === idx ? null : idx);
@@ -427,7 +434,7 @@ function App() {
             <h1 className="section-title hero-demo-h1">Notes wherever you need them.</h1>
             <p className="section-sub hero-demo-sub">Always on top, keyboard-first, local markdown editor, hidden from screen recordings.</p>
             <div style={{ marginTop: 28 }}>
-              <button onClick={handleDownloadStart} className="btn btn-primary" style={{ height: 'auto', padding: '16px 36px', display: 'inline-flex', alignItems: 'center', gap: 10, borderRadius: 28 }}>
+              <button onClick={() => handleDownloadStart('hero')} className="btn btn-primary" style={{ height: 'auto', padding: '16px 36px', display: 'inline-flex', alignItems: 'center', gap: 10, borderRadius: 28 }}>
                 {APPLE_LOGO_SVG}
                 <span style={{ fontWeight: 700, fontSize: 16.5, letterSpacing: '-0.01em' }}>Get for Mac</span>
               </button>
@@ -731,215 +738,193 @@ function App() {
         </div>
       </section>
 
-      {/* FEATURES — Apple-style image-led bento */}
-      <section className="section" id="features">
+      {/* FEATURES */}
+      <section className="section feat-section" id="features">
         <div className="wrap">
-          <div className="reveal" style={{ maxWidth: 640, marginBottom: 64 }}>
-            <p className="eyebrow">What it does</p>
-            <h2 className="section-title">Built for fast, private thinking.</h2>
-            <p className="section-sub">A keyboard-first, local-first Markdown editor that floats over your work — and hides itself when you share your screen.</p>
+          <div className="reveal" style={{ maxWidth: 600, marginBottom: 48 }}>
+            <h2 className="section-title">How Kaos helps you take notes.</h2>
           </div>
           <div className="bento bento-apple">
-            <div className="card span4 card-feature reveal">
+
+            {/* Always on top — span4 */}
+            <div className="card card-feature span4 reveal">
               <div className="card-copy">
-                <p className="eyebrow card-eyebrow">Keyboard-first</p>
-                <h3>Summon from anywhere.</h3>
-                <p className="card-sub">A single shortcut brings a note in. Another sends it away.</p>
+                <p className="card-eyebrow eyebrow">Always on top</p>
+                <h3>Always visible and on top of other apps.</h3>
               </div>
-              <div className="card-visual cv-summon">
-                <div className="cv-summon-stack" aria-hidden="true">
-                  <div className="cv-summon-dim" />
-                  <div className="cv-summon-note">
-                    <KaosWin title="quick.md" heading="Note this." toolbar={false}>
-                      <p className="kw-p">The thought arrives. <b>You catch it.</b><span className="kw-cursor" /></p>
-                    </KaosWin>
-                  </div>
-                  <div className="cv-summon-keys">
-                    <span className="kbd-key">⌥</span>
-                    <span className="kbd-key">⇧</span>
-                    <span className="kbd-key">N</span>
-                  </div>
+              <div className="card-visual cv-onto-stack">
+                <div className="cv-onto-win cv-onto-w1">
+                  <div className="cv-onto-bar"><span className="kw-lights"><i /><i /><i /></span></div>
+                </div>
+                <div className="cv-onto-win cv-onto-w2">
+                  <div className="cv-onto-bar"><span className="kw-lights"><i /><i /><i /></span></div>
+                </div>
+                <div className="cv-onto-win cv-onto-w3">
+                  <div className="cv-onto-bar"><span className="kw-lights"><i /><i /><i /></span></div>
+                </div>
+                <div className="cv-onto-note">
+                  <KaosWin title="Sprint notes" pinned toolbar={false}>
+                    <p>## Sprint notes</p>
+                    <p>- Ship login flow</p>
+                    <p>- Review design PR</p>
+                  </KaosWin>
                 </div>
               </div>
             </div>
 
-            <div className="card span2 card-feature reveal">
+            {/* Summon — span2 */}
+            <div className="card card-feature span2 reveal">
               <div className="card-copy">
-                <p className="eyebrow card-eyebrow">Local</p>
-                <h3>Lives on your Mac.</h3>
-                <p className="card-sub">Plain Markdown files. No cloud, no account.</p>
+                <p className="card-eyebrow eyebrow">Global shortcut</p>
+                <h3>Summon it easily with shortcuts.</h3>
               </div>
-              <div className="card-visual cv-local">
-                <div className="cv-folder" aria-hidden="true">
-                  <HardDrive size={20} strokeWidth={1.8} />
-                  <div className="cv-folder-files">
-                    <span className="cv-file"><FileText size={11} strokeWidth={2} /> meeting.md</span>
-                    <span className="cv-file"><FileText size={11} strokeWidth={2} /> ideas.md</span>
-                    <span className="cv-file"><FileText size={11} strokeWidth={2} /> todo.md</span>
-                  </div>
+              <div className="card-visual cv-summon-stack">
+                <div className="cv-summon-dim" />
+                <div className="cv-summon-note">
+                  <KaosWin title="Ideas" toolbar={false}>
+                    <p>- New dashboard layout</p>
+                    <p>- Ask Maya about API</p>
+                  </KaosWin>
+                </div>
+                <div className="cv-summon-keys">
+                  <kbd className="kbd-key-styled">⌥</kbd>
+                  <kbd className="kbd-key-styled">⇧</kbd>
+                  <kbd className="kbd-key-styled">N</kbd>
                 </div>
               </div>
             </div>
 
-            <div className="card span2 card-feature reveal">
+            {/* Markdown — span3 */}
+            <div className="card card-feature span3 reveal">
               <div className="card-copy">
-                <p className="eyebrow card-eyebrow">Markdown</p>
-                <h3>Plain in. Polished out.</h3>
-                <p className="card-sub">Type the syntax. Read the result.</p>
+                <p className="card-eyebrow eyebrow">Markdown</p>
+                <h3>Type Markdown and see it rendered.</h3>
               </div>
-              <div className="card-visual cv-markdown">
-                <div className="cv-md-split" aria-hidden="true">
+              <div className="card-visual">
+                <div className="cv-md-split">
                   <div className="cv-md-raw">
-                    <span># Roadmap</span>
-                    <span>- **ship** privacy</span>
-                    <span>- *fix* shortcut</span>
+                    <span>## Meeting</span>
+                    <span></span>
+                    <span>- [ ] Follow up</span>
+                    <span>- [x] Send recap</span>
+                    <span>- [ ] Book room</span>
                   </div>
                   <div className="cv-md-rendered">
-                    <div className="cv-md-h">Roadmap</div>
+                    <div className="cv-md-h">Meeting</div>
                     <ul>
-                      <li><b>ship</b> privacy</li>
-                      <li><i>fix</i> shortcut</li>
+                      <li>Follow up</li>
+                      <li>Send recap</li>
+                      <li>Book room</li>
                     </ul>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="card span4 card-feature reveal">
+            {/* Local & private — span3 */}
+            <div className="card card-feature span3 reveal">
               <div className="card-copy">
-                <p className="eyebrow card-eyebrow">Always on top</p>
-                <h3>Floats over everything.</h3>
-                <p className="card-sub">Your note stays put while the rest of your screen moves around it.</p>
+                <p className="card-eyebrow eyebrow">Local &amp; private</p>
+                <h3>Store files locally and let LLMs access them.</h3>
               </div>
-              <div className="card-visual cv-onto">
-                <div className="cv-onto-stack" aria-hidden="true">
-                  <div className="cv-onto-win cv-onto-w1"><div className="cv-onto-bar"><span className="aw-lights"><i /><i /><i /></span></div></div>
-                  <div className="cv-onto-win cv-onto-w2"><div className="cv-onto-bar"><span className="aw-lights"><i /><i /><i /></span></div></div>
-                  <div className="cv-onto-win cv-onto-w3"><div className="cv-onto-bar"><span className="aw-lights"><i /><i /><i /></span></div></div>
-                  <div className="cv-onto-note">
-                    <KaosWin title="notes.md" heading="Always here." toolbar={false} pinned>
-                      <p className="kw-p">No matter what you open.</p>
-                    </KaosWin>
+              <div className="card-visual cv-local">
+                <div className="cv-folder">
+                  <HardDrive size={20} strokeWidth={1.8} />
+                  <div className="cv-folder-files">
+                    <div className="cv-file"><FileText size={12} strokeWidth={2} /> meeting-notes.md</div>
+                    <div className="cv-file"><FileText size={12} strokeWidth={2} /> sprint-goals.md</div>
+                    <div className="cv-file"><FileText size={12} strokeWidth={2} /> ideas.md</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="card span6 card-feature card-privacy reveal" id="privacy">
+            {/* Privacy slider — span6 */}
+            <div className="card card-feature card-privacy span6 reveal" id="privacy">
               <div className="card-copy">
-                <p className="eyebrow card-eyebrow">Privacy</p>
-                <h3>What they see. What you see.</h3>
-                <p className="card-sub">Kaos Notes hides itself from screen recordings, screenshots, and Zoom — automatically. Drag to compare.</p>
+                <p className="card-eyebrow eyebrow">Screen privacy</p>
+                <h3>Hide it from screen recordings.</h3>
               </div>
               <div className="card-visual cv-privacy">
                 <PrivacySlider />
               </div>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* SHORTCUTS — simplified */}
+      {/* SHORTCUTS */}
       <section className="section" id="shortcuts">
         <div className="wrap">
-          <div className="reveal" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 32, flexWrap: 'wrap', marginBottom: 48 }}>
-            <div style={{ maxWidth: 620 }}>
-              <p className="eyebrow">Shortcuts</p>
-              <h2 className="section-title">The four you'll actually use.</h2>
-              <p className="section-sub">Everything else lives in the in-app settings.</p>
-            </div>
-            <div className="shortcut-toggle-container">
-              <span className="toggle-label">Show</span>
-              <div className="toggle-switch-group">
-                <button
-                  className={`toggle-switch-btn ${!showSymbols ? 'active' : ''}`}
-                  onClick={() => setShowSymbols(false)}
-                >
-                  Keys
-                </button>
-                <button
-                  className={`toggle-switch-btn ${showSymbols ? 'active' : ''}`}
-                  onClick={() => setShowSymbols(true)}
-                >
-                  Symbols
-                </button>
-              </div>
-            </div>
+          <div className="reveal center" style={{ maxWidth: 560, margin: '0 auto 48px' }}>
+            <p className="eyebrow" style={{ justifyContent: 'center' }}>Shortcuts</p>
+            <h2 className="section-title">Every shortcut.</h2>
+            <p className="section-sub" style={{ margin: '0 auto' }}>All rebindable from within the app.</p>
           </div>
-
-          <div className="shortcuts-grid shortcuts-grid-four">
-            {SHORTCUTS.map((shortcut) => {
-              const IconComponent = shortcut.icon;
-              return (
-                <div key={shortcut.id} className="shortcut-card reveal">
-                  <div className="shortcut-card-header">
-                    <div className="shortcut-icon-wrapper">
-                      <IconComponent size={20} strokeWidth={2} />
-                    </div>
-                    <div className="shortcut-kbd-group">
-                      {(showSymbols ? shortcut.symbols : shortcut.keys).map((key, i) => (
-                        <kbd key={i} className="kbd-key-styled">
-                          {key}
-                        </kbd>
-                      ))}
-                    </div>
+          <div className="sc-table-wrap reveal">
+            {SHORTCUTS_ALL.map(group => (
+              <div key={group.category} className="sc-group">
+                <div className="sc-cat-label">{group.category}</div>
+                {group.rows.map((row, i) => (
+                  <div key={i} className="sc-row">
+                    <span className="sc-action">{row.action}</span>
+                    <span className="sc-keys">
+                      {row.keys.map((k, ki) => <kbd key={ki} className="kbd-key-styled">{k}</kbd>)}
+                    </span>
                   </div>
-                  <h3 className="shortcut-card-title">{shortcut.title}</h3>
-                  <p className="shortcut-card-desc">{shortcut.description}</p>
-                </div>
-              );
-            })}
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* FEATURE REQUESTS */}
-      <section className="section alt" id="requests">
+      <section className="section section-dark" id="requests">
         <div className="wrap">
-          <div className="fr-grid">
-            <div className="fr-copy reveal">
-              <p className="eyebrow">Open beta</p>
-              <h2 className="section-title">What should we build next?</h2>
-              <p className="section-sub">Kaos Notes is shaped by the people using it. Missing a shortcut, a layout, an export option? Tell us — we read every one.</p>
-              <div className="fr-meta">
-                <span className="fr-meta-pill"><Layers size={13} strokeWidth={2.2} /> Weekly updates</span>
-                <span className="fr-meta-pill"><Shield size={13} strokeWidth={2.2} /> Replies from the team</span>
-              </div>
+          <div className="center reveal" style={{ maxWidth: 580, margin: '0 auto 40px' }}>
+            <p className="eyebrow" style={{ justifyContent: 'center' }}>Open beta</p>
+            <h2 className="section-title">What should we build next?</h2>
+            <p className="section-sub" style={{ margin: '0 auto 24px' }}>Kaos Notes is shaped by the people using it. Missing a shortcut, a layout, an export option? Tell us — we read every one.</p>
+            <div className="fr-meta" style={{ justifyContent: 'center' }}>
+              <span className="fr-meta-pill"><Layers size={13} strokeWidth={2.2} /> Weekly updates</span>
+              <span className="fr-meta-pill"><Shield size={13} strokeWidth={2.2} /> Replies from the team</span>
             </div>
-            <form className="fr-form reveal" onSubmit={submitFeatureRequest}>
-              {featureRequestSent ? (
-                <div className="fr-success">
-                  <div className="fr-success-icon"><Pin size={18} strokeWidth={2.4} fill="currentColor" /></div>
-                  <h3>Got it. We'll take a look. ✦</h3>
-                  <p>Thanks for shaping the roadmap. If you left an email, we'll follow up when this lands.</p>
-                </div>
-              ) : (
-                <>
-                  <label className="fr-label" htmlFor="fr-idea">Your idea</label>
-                  <textarea
-                    id="fr-idea"
-                    className="fr-textarea"
-                    placeholder="A shortcut to send a note to the trash, a way to export to PDF…"
-                    value={featureRequest}
-                    onChange={e => setFeatureRequest(e.target.value)}
-                    rows={5}
-                    required
-                  />
-                  <label className="fr-label" htmlFor="fr-email">Email <span className="fr-label-opt">— optional, so we can follow up</span></label>
-                  <input
-                    id="fr-email"
-                    type="email"
-                    className="fr-input"
-                    placeholder="you@email.com"
-                    value={featureRequestEmail}
-                    onChange={e => setFeatureRequestEmail(e.target.value)}
-                  />
-                  {featureRequestError && <p className="fr-error">{featureRequestError}</p>}
-                  <button type="submit" className="btn btn-primary fr-submit">Send request</button>
-                </>
-              )}
-            </form>
           </div>
+          <form className="fr-form-centered reveal" onSubmit={submitFeatureRequest}>
+            {featureRequestSent ? (
+              <div className="fr-success">
+                <div className="fr-success-icon"><Pin size={18} strokeWidth={2.4} fill="currentColor" /></div>
+                <h3>Got it. We'll take a look. ✦</h3>
+                <p>Thanks for shaping the roadmap. If you left an email, we'll follow up when this lands.</p>
+              </div>
+            ) : (
+              <>
+                <label className="fr-label" htmlFor="fr-idea">Your idea</label>
+                <textarea
+                  id="fr-idea"
+                  className="fr-textarea"
+                  placeholder="A shortcut to send a note to the trash, a way to export to PDF…"
+                  value={featureRequest}
+                  onChange={e => setFeatureRequest(e.target.value)}
+                  rows={5}
+                  required
+                />
+                <label className="fr-label" htmlFor="fr-email">Email <span className="fr-label-opt">— optional, so we can follow up</span></label>
+                <input
+                  id="fr-email"
+                  type="email"
+                  className="fr-input"
+                  placeholder="you@email.com"
+                  value={featureRequestEmail}
+                  onChange={e => setFeatureRequestEmail(e.target.value)}
+                />
+                {featureRequestError && <p className="fr-error">{featureRequestError}</p>}
+                <button type="submit" className="btn btn-primary fr-submit-full">Send request</button>
+              </>
+            )}
+          </form>
         </div>
       </section>
 
@@ -972,7 +957,7 @@ function App() {
           <div className="center reveal" style={{ maxWidth: 640, margin: '0 auto' }}>
             <h2>Bring a little order to the kaos.</h2>
             <p className="section-sub" style={{ margin: '0 auto 36px' }}>Download the free beta for macOS today.</p>
-            <button onClick={handleDownloadStart} className="btn btn-primary" style={{ height: 'auto', padding: '16px 36px', display: 'inline-flex', alignItems: 'center', gap: 10, borderRadius: 28 }}>
+            <button onClick={() => handleDownloadStart('footer')} className="btn btn-primary" style={{ height: 'auto', padding: '16px 36px', display: 'inline-flex', alignItems: 'center', gap: 10, borderRadius: 28 }}>
               {APPLE_LOGO_SVG}
               <span style={{ fontWeight: 700, fontSize: 16.5, letterSpacing: '-0.01em' }}>Get for Mac</span>
             </button>
@@ -998,12 +983,6 @@ function App() {
                 <a href="#faq">FAQ</a>
               </div>
               <div className="col">
-                <h5>Company</h5>
-                <a href="#">About</a>
-                <a href="#">Blog</a>
-                <a href="#">Contact</a>
-              </div>
-              <div className="col">
                 <h5>Legal</h5>
                 <Link to="/privacy">Privacy</Link>
                 <Link to="/terms">Terms</Link>
@@ -1015,18 +994,25 @@ function App() {
         </div>
       </footer>
 
+      {/* MOBILE MENU BACKDROP */}
+      {navMenuOpen && (
+        <div className="mobile-menu-backdrop" onClick={() => setNavMenuOpen(false)} />
+      )}
+
       {/* FLOAT NAV */}
-      <div className={`float-nav fn-visible${navMenuOpen ? ' fn-menu-open' : ''}`}>
+      <div className={`float-nav fn-visible${navMenuOpen ? ' fn-menu-open' : ''}${navScrolled ? ' fn-scrolled' : ''}`}>
         <a className="brand fn-brand" href="#top">
           <img className="mark" src="/app_icon.png" alt="" />
           <span>Kaos&nbsp;Notes</span>
         </a>
         <nav className="fn-links">
+          <div className="fn-drawer-handle" />
           <a href="#features" onClick={() => setNavMenuOpen(false)}>Features</a>
           <a href="#privacy" onClick={() => setNavMenuOpen(false)}>Privacy</a>
           <a href="#shortcuts" onClick={() => setNavMenuOpen(false)}>Shortcuts</a>
           <a href="#requests" onClick={() => setNavMenuOpen(false)}>Requests</a>
           <a href="#faq" onClick={() => setNavMenuOpen(false)}>FAQ</a>
+          <button onClick={() => { setNavMenuOpen(false); handleDownloadStart('nav-menu'); }} className="btn btn-primary fn-menu-download">Download Beta</button>
         </nav>
         <button
           className="fn-menu-toggle"
@@ -1036,7 +1022,7 @@ function App() {
         >
           <span /><span /><span />
         </button>
-        <button onClick={handleDownloadStart} className="btn btn-primary fn-cta">Download</button>
+        <button onClick={() => handleDownloadStart('nav-cta')} className="btn btn-primary fn-cta">Download</button>
       </div>
 
       {showDownloadModal && (
@@ -1044,41 +1030,129 @@ function App() {
           <div className="dl-modal" onClick={e => e.stopPropagation()}>
             <button className="dl-modal-close" aria-label="Close modal" onClick={() => setShowDownloadModal(false)}>×</button>
 
-            <div className="dl-icon-container">
-              <div className="dl-icon-pulse" />
-              <img src="/app_icon.png" alt="Kaos Notes" />
+            <div className="dl-modal-header">
+              <div className="dl-downloaded-badge">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#22c55e" strokeWidth="1"/><path d="M4.5 8.5L7 11L11.5 5.5" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Downloaded
+              </div>
+              <h2 className="dl-modal-title">How to install Kaos Notes</h2>
             </div>
 
-            <h2>Downloading Kaos Notes... 🚀</h2>
-            <p>Your download has started. Enter your email below to receive updates on new features, tips, and keyboard shortcuts.</p>
+            <div className="dl-steps">
+              <div className="dl-step">
+                <div className="dl-step-num">1</div>
+                <div className="dl-step-card dl-step-card--dark">
+                  <div className="dl-step-illustration dl-step-illustration--finder">
+                    <div className="dl-finder-bar">
+                      <span className="dl-finder-title">Downloads</span>
+                    </div>
+                    <div className="dl-finder-dock">
+                      <div className="dl-dock-item dl-dock-item--blank" />
+                      <div className="dl-dock-item dl-dock-item--dmg">
+                        <svg width="28" height="32" viewBox="0 0 28 32" fill="none"><rect x="1" y="5" width="22" height="26" rx="3" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="1.2"/><path d="M15 5V1H7L1 7v-2" fill="none"/><path d="M1 7H7V1" stroke="#94a3b8" strokeWidth="1.2" fill="none"/><circle cx="20" cy="22" r="7" fill="#1e3a5f"/><path d="M17 22l3 3 3-3M20 17v8" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </div>
+                      <div className="dl-dock-item dl-dock-item--trash">
+                        <svg width="22" height="26" viewBox="0 0 22 26" fill="none"><path d="M4 6h14l-1.5 17a1 1 0 01-1 .9H6.5a1 1 0 01-1-.9L4 6z" fill="#94a3b8"/><path d="M2 6h18M8 6V3h6v3" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      </div>
+                    </div>
+                    <div className="dl-finder-cursor">
+                      <svg width="14" height="18" viewBox="0 0 14 18" fill="none"><path d="M1 1l12 7-5.5 1L5 17 1 1z" fill="white" stroke="#333" strokeWidth="0.8"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <p className="dl-step-desc">Open <span className="dl-highlight">KaosNotes.dmg</span> from your <span className="dl-highlight">Downloads</span> folder</p>
+              </div>
 
-            {downloadEmailSubmitted ? (
-              <p className="form-note form-done" style={{ fontSize: 16, marginTop: 12 }}>
-                Awesome! We'll keep you posted on new updates. ✦
-              </p>
-            ) : (
-              <form className="waitlist" onSubmit={(e) => {
-                e.preventDefault();
-                const ok = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(downloadEmail.trim());
-                if (ok) {
+              <div className="dl-step">
+                <div className="dl-step-num">2</div>
+                <div className="dl-step-card dl-step-card--light">
+                  <div className="dl-step-illustration dl-step-illustration--drag">
+                    <div className="dl-drag-app">
+                      <img src="/app_icon.png" alt="Kaos Notes" className="dl-drag-icon" />
+                      <div className="dl-drag-cursor">
+                        <svg width="14" height="18" viewBox="0 0 14 18" fill="none"><path d="M1 1l12 7-5.5 1L5 17 1 1z" fill="white" stroke="#333" strokeWidth="0.8"/></svg>
+                      </div>
+                    </div>
+                    <div className="dl-drag-arrow">→</div>
+                    <div className="dl-drag-folder">
+                      <svg width="56" height="48" viewBox="0 0 56 48" fill="none"><path d="M2 10C2 7.8 3.8 6 6 6h16l4 6h22c2.2 0 4 1.8 4 4v26c0 2.2-1.8 4-4 4H6c-2.2 0-4-1.8-4-4V10z" fill="#60a5fa"/><path d="M2 16h52" stroke="#3b82f6" strokeWidth="1"/><text x="10" y="38" fontFamily="monospace" fontSize="10" fill="white">A</text></svg>
+                    </div>
+                  </div>
+                </div>
+                <p className="dl-step-desc">Drag the <span className="dl-highlight">Kaos Notes icon</span> into your <span className="dl-highlight">Applications</span> folder</p>
+              </div>
+
+              <div className="dl-step">
+                <div className="dl-step-num">3</div>
+                <div className="dl-step-card dl-step-card--light">
+                  <div className="dl-step-illustration dl-step-illustration--apps">
+                    <div className="dl-apps-list">
+                      <div className="dl-apps-header">Applications</div>
+                      <div className="dl-apps-row">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="#f97316"/><text x="5" y="14" fontFamily="sans-serif" fontSize="10" fill="white">C</text></svg>
+                        <span>Calendar</span>
+                      </div>
+                      <div className="dl-apps-row dl-apps-row--selected">
+                        <img src="/app_icon.png" alt="" style={{ width: 20, height: 20, borderRadius: 5 }} />
+                        <span>Kaos Notes</span>
+                        <div className="dl-apps-cursor">
+                          <svg width="12" height="15" viewBox="0 0 14 18" fill="none"><path d="M1 1l12 7-5.5 1L5 17 1 1z" fill="white" stroke="#333" strokeWidth="0.8"/></svg>
+                        </div>
+                      </div>
+                      <div className="dl-apps-row">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="#a855f7"/><text x="5" y="14" fontFamily="sans-serif" fontSize="10" fill="white">C</text></svg>
+                        <span>Contacts</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p className="dl-step-desc">Open <span className="dl-highlight">Kaos Notes</span> from your <span className="dl-highlight">Applications</span> folder</p>
+              </div>
+            </div>
+
+            <div className="dl-email-section">
+              {downloadEmailSubmitted ? (
+                <p className="dl-email-done">You're on the list — we'll send updates your way.</p>
+              ) : (
+                <form className="dl-email-form" onSubmit={async (e) => {
+                  e.preventDefault();
+                  setDownloadEmailError('');
+                  const email = downloadEmail.trim();
+                  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                    setDownloadEmailError('That email doesn’t look right.');
+                    return;
+                  }
+                  if (FEATURE_REQUEST_ENDPOINT) {
+                    const ok = await postToFormspree({ email, source: 'download-modal', _subject: 'Kaos Notes — download signup' });
+                    if (!ok) {
+                      setDownloadEmailError('Could not save right now. Try again in a moment.');
+                      return;
+                    }
+                  }
                   setDownloadEmailSubmitted(true);
-                }
-              }}>
-                <input
-                  type="email"
-                  placeholder="you@email.com"
-                  aria-label="Email for updates"
-                  value={downloadEmail}
-                  onChange={e => setDownloadEmail(e.target.value)}
-                  required
-                />
-                <button type="submit" className="btn btn-primary">Keep me updated</button>
-              </form>
-            )}
+                }}>
+                  <p className="dl-email-label">Get notified about new features &amp; tips</p>
+                  <div className="dl-email-row">
+                    <input
+                      type="email"
+                      placeholder="you@email.com"
+                      aria-label="Email for updates"
+                      value={downloadEmail}
+                      onChange={e => setDownloadEmail(e.target.value)}
+                      required
+                      className="dl-email-input"
+                    />
+                    <button type="submit" className="btn btn-primary dl-email-btn">Notify me</button>
+                  </div>
+                  {downloadEmailError && <p className="fr-error" style={{ marginTop: 8 }}>{downloadEmailError}</p>}
+                </form>
+              )}
+            </div>
 
-            <button className="dl-modal-skip" onClick={() => setShowDownloadModal(false)}>
-              Skip for now
-            </button>
+            <div className="dl-modal-footer">
+              <span>Problem? </span>
+              <button className="dl-retry-link" onClick={() => { triggerDownload('modal-retry'); }}>Download again</button>
+            </div>
           </div>
         </div>
       )}

@@ -18,7 +18,7 @@ export default function PrivacyPage() {
         <div className="legal-content">
           <p className="eyebrow">Legal</p>
           <h1 className="section-title">Privacy Policy</h1>
-          <p className="legal-date">Last updated: June 2, 2026</p>
+          <p className="legal-date">Last updated: June 3, 2026</p>
 
           <section className="legal-section">
             <h2>1. Overview</h2>
@@ -35,9 +35,9 @@ export default function PrivacyPage() {
             <h3>2.1 Notes and content</h3>
             <p>
               All notes you create in Kaos Notes are stored exclusively on your device using local file
-              storage. We have no access to the content of your notes. When iCloud sync is enabled (Pro
-              tier), your notes are synced via Apple's iCloud infrastructure — subject to Apple's own
-              privacy policy — and are not transmitted to our servers.
+              storage. We have no access to the content of your notes. If you choose to keep your notes
+              folder inside iCloud Drive, syncing happens through Apple's iCloud infrastructure — subject
+              to Apple's own privacy policy — and your notes are not transmitted to our servers.
             </p>
 
             <h3>2.2 Email address (optional)</h3>
@@ -89,8 +89,9 @@ export default function PrivacyPage() {
               We may use the following third-party services. Each is governed by its own privacy policy:
             </p>
             <ul>
-              <li><strong>Apple iCloud</strong> — for optional Pro sync</li>
-              <li><strong>[EMAIL PROVIDER]</strong> — for transactional and newsletter emails</li>
+              <li><strong>Apple iCloud</strong> — only if you choose to store your notes folder in iCloud Drive</li>
+              <li><strong>Formspree</strong> — for processing feature requests and newsletter signups submitted on this website</li>
+              <li><strong>Vercel</strong> — for website hosting and privacy-respecting analytics</li>
             </ul>
           </section>
 

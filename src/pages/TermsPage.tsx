@@ -18,7 +18,7 @@ export default function TermsPage() {
         <div className="legal-content">
           <p className="eyebrow">Legal</p>
           <h1 className="section-title">Terms of Use</h1>
-          <p className="legal-date">Last updated: June 2, 2026</p>
+          <p className="legal-date">Last updated: June 3, 2026</p>
 
           <section className="legal-section">
             <h2>1. Acceptance of terms</h2>
@@ -43,15 +43,9 @@ export default function TermsPage() {
           </section>
 
           <section className="legal-section">
-            <h2>3. Free and Pro tiers</h2>
+            <h2>3. Cost</h2>
             <p>
-              Kaos Notes is available in a Free tier and an optional paid Pro tier. The Free tier is
-              provided at no cost and may include limitations on features. The Pro tier is available via
-              a subscription or one-time purchase and unlocks additional features including iCloud sync.
-            </p>
-            <p>
-              Pricing and features of each tier may change with reasonable notice. Existing paid
-              subscribers will be notified of any price changes before they take effect.
+              Kaos Notes is free. There are no paid tiers, no subscriptions, and no in-app purchases.
             </p>
           </section>
 
@@ -103,9 +97,9 @@ export default function TermsPage() {
             <p>
               To the maximum extent permitted by applicable law, [YOUR NAME / COMPANY NAME] shall not
               be liable for any indirect, incidental, special, consequential, or punitive damages,
-              including loss of data, arising out of or in connection with your use of the App. Our
-              total liability to you for any claims arising under these Terms shall not exceed the
-              amount you paid for the App in the twelve months preceding the claim.
+              including loss of data, arising out of or in connection with your use of the App.
+              Because Kaos Notes is provided free of charge, our aggregate liability to you is limited
+              to the maximum extent permitted by applicable law.
             </p>
           </section>
 

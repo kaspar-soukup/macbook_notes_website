@@ -39,15 +39,23 @@ export default function PrivacySlider() {
 
   return (
     <div className="ps-frame" ref={frameRef}>
+      {/* "What they see" — only the background app, note is invisible */}
       <div className="ps-layer ps-theirs">
-        <PrivacyNote isHidden />
+        <PrivacyScene showNote={false} />
       </div>
+      {/* "What you see" — background app + note with orange outline */}
       <div className="ps-layer ps-yours" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-        <PrivacyNote />
+        <PrivacyScene showNote />
       </div>
 
-      <div className="ps-label ps-label-left">What you see</div>
-      <div className="ps-label ps-label-right">What they see</div>
+
+      {/* Labels masked by the divider position using overflow-hidden wrappers */}
+      <div className="ps-label-mask ps-label-mask-left" style={{ width: `${pos}%` }}>
+        <div className="ps-label ps-label-left">What you see</div>
+      </div>
+      <div className="ps-label-mask ps-label-mask-right" style={{ left: `${pos}%` }}>
+        <div className="ps-label ps-label-right">What they see</div>
+      </div>
 
       <div
         className="ps-divider"
@@ -74,36 +82,64 @@ export default function PrivacySlider() {
   );
 }
 
-function PrivacyNote({ isHidden = false }: { isHidden?: boolean }) {
+function PrivacyScene({ showNote }: { showNote: boolean }) {
   return (
-    <div className={`ps-note${isHidden ? ' ps-note-hidden' : ''}`}>
-      <div className="ps-note-bar">
-        <div className="ps-note-dots" aria-hidden="true">
-          <span className="ps-dot ps-dot-red" />
-          <span className="ps-dot ps-dot-yellow" />
-          <span className="ps-dot ps-dot-green" />
+    <div className="ps-scene">
+      {/* Background app window — identical in both views so the divider seam is invisible */}
+      <div className="ps-bg-app">
+        <div className="ps-app-bar">
+          <span className="ps-note-dots" aria-hidden="true">
+            <span className="ps-dot ps-dot-red" />
+            <span className="ps-dot" />
+            <span className="ps-dot" />
+          </span>
+          <span className="ps-app-title-text">Document.txt — TextEdit</span>
         </div>
-        <div className="ps-note-title">Test Note</div>
-        <div className="ps-note-actions" aria-hidden="true" />
-      </div>
-      <div className="ps-note-body">
-        <h4>Test Note</h4>
-        <ul>
-          <li>Bla bla bla</li>
-        </ul>
-      </div>
-      <div className="ps-note-footer">
-        <div className="ps-note-keys">
-          <span className="ps-key">^</span>
-          <span className="ps-key">shift</span>
-          <span className="ps-key">N</span>
-          <span className="ps-note-caption">Toggle Window</span>
-        </div>
-        <div className="ps-note-icons" aria-hidden="true">
-          <EyeOff size={12} strokeWidth={2} className="ps-note-eye" />
-          <span className="ps-note-grip" />
+        <div className="ps-app-body">
+          <div className="ps-app-line w90" />
+          <div className="ps-app-line w75" />
+          <div className="ps-app-line w82" />
+          <div className="ps-app-line w50" />
+          <div className="ps-app-line w0" />
+          <div className="ps-app-line w68" />
+          <div className="ps-app-line w40" />
         </div>
       </div>
+
+      {/* Kaos note — only rendered in "yours" layer, hidden from recording */}
+      {showNote && (
+        <div className="ps-overlay-note">
+          <div className="ps-note ps-note-hidden">
+            <div className="ps-note-bar">
+              <div className="ps-note-dots" aria-hidden="true">
+                <span className="ps-dot ps-dot-red" />
+                <span className="ps-dot" />
+                <span className="ps-dot" />
+              </div>
+              <div className="ps-note-title">Meeting Notes</div>
+              <div className="ps-note-actions" aria-hidden="true" />
+            </div>
+            <div className="ps-note-body">
+              <h4>Meeting Notes</h4>
+              <ul>
+                <li>Ship the release today</li>
+                <li>Follow up with Maya</li>
+              </ul>
+            </div>
+            <div className="ps-note-footer">
+              <div className="ps-note-keys">
+                <span className="ps-key">⌘</span>
+                <span className="ps-key">⇧</span>
+                <span className="ps-key">H</span>
+                <span className="ps-note-caption">Toggle privacy</span>
+              </div>
+              <div className="ps-note-icons" aria-hidden="true">
+                <EyeOff size={12} strokeWidth={2} className="ps-note-eye" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
