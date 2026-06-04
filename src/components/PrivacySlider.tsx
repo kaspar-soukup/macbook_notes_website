@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, EyeOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, EyeOff, Settings } from 'lucide-react';
 
 export default function PrivacySlider() {
   const [pos, setPos] = useState(55);
@@ -117,7 +117,9 @@ function PrivacyScene({ showNote }: { showNote: boolean }) {
                 <span className="ps-dot" />
               </div>
               <div className="ps-note-title">Meeting Notes</div>
-              <div className="ps-note-actions" aria-hidden="true" />
+              <div className="ps-note-actions" aria-hidden="true">
+                <Settings size={12} strokeWidth={1.8} />
+              </div>
             </div>
             <div className="ps-note-body">
               <h4>Meeting Notes</h4>
