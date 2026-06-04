@@ -977,7 +977,6 @@ function App() {
               <div className="col">
                 <h5>Product</h5>
                 <a href="#features">Features</a>
-                <a href="#privacy">Privacy</a>
                 <a href="#shortcuts">Shortcuts</a>
                 <a href="#requests">Requests</a>
                 <a href="#faq">FAQ</a>
@@ -1008,7 +1007,6 @@ function App() {
         <nav className="fn-links">
           <div className="fn-drawer-handle" />
           <a href="#features" onClick={() => setNavMenuOpen(false)}>Features</a>
-          <a href="#privacy" onClick={() => setNavMenuOpen(false)}>Privacy</a>
           <a href="#shortcuts" onClick={() => setNavMenuOpen(false)}>Shortcuts</a>
           <a href="#requests" onClick={() => setNavMenuOpen(false)}>Requests</a>
           <a href="#faq" onClick={() => setNavMenuOpen(false)}>FAQ</a>
